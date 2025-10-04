@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Interaction Name]</title>
+    
+    <!-- ═══════════════════════════════════════════════════════════
+         CONFIGURATION SECTION - EDIT THIS SECTION TO UPDATE CONTENT
+         ⚠️ LLM INSTRUCTION: When generating interactions, place ALL
+         content data in this CONFIG object. Never hardcode content
+         strings in the logic section.
+         
+         Structure:
+         - content: All learner-facing text and media
+         - settings: Interaction behavior configuration
+         - feedback: Response messages for learner actions
+         
+         ⚠️ INSTRUCTIONAL DESIGNERS: This is the only section you need
+         to edit to change quiz questions, feedback messages, or 
+         interaction settings. Everything below this handles the logic.
+    ══════════════════════════════════════════════════════════ -->
+    <script>
+        const CONFIG = {
+            content: {
+                // All learner-facing text, questions, images, etc.
+                title: "Interaction Title",
+                instructions: "Instructions for the learner",
+                // Add your content structure here
+            },
+            settings: {
+                // Behavior configuration (shuffle, attempts, scoring)
+                // Add your settings here
+            },
+            feedback: {
+                // Response messages
+                correct: "Correct!",
+                incorrect: "Try again.",
+                // Add your feedback messages here
+            }
+        };
+    </script>
+    
+    <!-- ═══════════════════════════════════════════════════════════
+         STYLES SECTION
+         Define all visual presentation here using CSS
+         No inline styles in the LOGIC section
+         Use CSS custom properties for themeable values
+    ══════════════════════════════════════════════════════════ -->
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --bg-color: #f9fafb;
+            --text-color: #1f2937;
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            background: var(--bg-color);
+        }
+
+        #app {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Add your custom styles here */
+    </style>
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════════════════════
+         APPLICATION LOGIC
+         ⚠️ LLM INSTRUCTION: All code must follow the pattern below.
+         
+         Required Structure:
+         1. STATE object - single source of truth
+         2. init() - setup and initial render
+         3. render() - build/update UI from current state
+         4. Event handlers - update state, then call render()
+         5. Helper functions - pure functions when possible
+         
+         RULES:
+         - Never manipulate DOM directly in event handlers
+         - Always update STATE first, then call render()
+         - Keep functions small and single-purpose
+         - Use descriptive function names (verbs for actions)
+         - Add comments explaining "why" not "what"
+    ══════════════════════════════════════════════════════════ -->
+    <script>
+        // ============================================
+        // STATE - Single source of truth
+        // ============================================
+        const STATE = {
+            // Initialize state properties here
+            currentStep: 0,
+            isComplete: false
+            // Add your state properties
+        };
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        function init() {
+            // Setup code goes here
+            // - Shuffle content if needed
+            // - Set up initial state
+            // - Load saved progress if applicable
+            render();
+        }
+
+        // ============================================
+        // RENDERING
+        // ============================================
+        function render() {
+            const app = document.getElementById('app');
+            
+            // Build HTML based on current STATE
+            const html = `
+                <div class="container">
+                    <h1>${CONFIG.content.title}</h1>
+                    <p>${CONFIG.content.instructions}</p>
+                    <!-- Add your dynamic HTML here -->
+                </div>
+            `;
+            
+            app.innerHTML = html;
+            
+            // Attach event listeners after DOM is updated
+            attachEventListeners();
+        }
+
+        // ============================================
+        // EVENT HANDLERS
+        // Pattern: handler → update STATE → call render()
+        // ============================================
+        function attachEventListeners() {
+            // Attach event listeners to dynamic elements
+            // Example:
+            // const button = document.getElementById('myButton');
+            // if (button) button.addEventListener('click', handleClick);
+        }
+
+        function handleClick(event) {
+            // 1. Get relevant data from event
+            // 2. Update STATE based on action
+            // 3. Re-render to show changes
+            
+            // Example:
+            // STATE.currentStep++;
+            // render();
+        }
+
+        // ============================================
+        // HELPER FUNCTIONS
+        // Keep these pure (no side effects) when possible
+        // ============================================
+        
+        /**
+         * Example helper function
+         * @param {Array} items - Items to shuffle
+         * @returns {Array} Shuffled array
+         */
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Add your helper functions here
+
+        // ============================================
+        // START APPLICATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MARKUP
+         Minimal structure - most HTML generated by render()
+    ══════════════════════════════════════════════════════════ -->
+    <div id="app"></div>
+</body>
+</html>
