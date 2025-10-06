@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Worst New Hire Ever</title>
+    
+    <!-- ═══════════════════════════════════════════════════════════
+         CONFIGURATION SECTION - EDIT THIS SECTION TO UPDATE CONTENT
+    ══════════════════════════════════════════════════════════ -->
+    <script>
+        const CONFIG = {
+            content: {
+                title: "The Worst New Hire Ever",
+                subtitle: "Coach this new sales rep on selling to CFOs. React with 👍 or 👎 to their plans.",
+                newHireName: "Alex",
+                
+                scenarios: [
+                    {
+                        message: "Hey! I'm meeting with a CFO tomorrow. I'm going to focus on how cheap our solution is compared to competitors. CFOs only care about getting the lowest price, right?",
+                        isCorrect: false,
+                        corrections: [
+                            { 
+                                text: "Actually, you should emphasize that we're the premium option with the best features.",
+                                isCorrect: false
+                            },
+                            { 
+                                text: "CFOs evaluate through four lenses: cost reduction, productivity, revenue growth, and risk mitigation - not just price. Focus on the value and ROI, not being cheapest.",
+                                isCorrect: true
+                            },
+                            { 
+                                text: "Just avoid talking about price altogether and focus only on our product features.",
+                                isCorrect: false
+                            }
+                        ],
+                        newHireResponse: "Ah ok, so I should focus on demonstrating value across multiple dimensions - cost savings, productivity gains, revenue impact, and risk reduction - rather than just competing on price."
+                    },
+                    {
+                        message: "The CFO asked for ROI projections. I'm going to give them a single best-case number showing 500% ROI. Simple and impressive is better than confusing them with ranges and assumptions, right?",
+                        isCorrect: false,
+                        corrections: [
+                            { 
+                                text: "You should give them the worst-case scenario instead so they're pleasantly surprised.",
+                                isCorrect: false
+                            },
+                            { 
+                                text: "CFOs demand transparent assumptions and realistic ranges. Provide a credible ROI range with explicit assumptions they can validate, not a single optimistic number.",
+                                isCorrect: true
+                            },
+                            { 
+                                text: "Tell them you can't provide any ROI projections because every customer is different.",
+                                isCorrect: false
+                            }
+                        ],
+                        newHireResponse: "Ah ok, so I need to provide risk-adjusted ROI calculations with transparent assumptions and a realistic range of outcomes, including comparable case studies from similar companies."
+                    },
+                    {
+                        message: "I need to close this deal by Friday. I'm going to tell them this special pricing expires in 48 hours and create urgency. CFOs respond well to time pressure and limited offers, right?",
+                        isCorrect: false,
+                        corrections: [
+                            { 
+                                text: "Good idea, but make it expire in 24 hours instead to create even more urgency.",
+                                isCorrect: false
+                            },
+                            { 
+                                text: "Artificial urgency and exploding offers damage credibility with CFOs. They're sophisticated buyers who see through pressure tactics. Focus on genuine business urgency instead.",
+                                isCorrect: true
+                            },
+                            { 
+                                text: "You should threaten to raise prices next quarter instead of offering a discount.",
+                                isCorrect: false
+                            }
+                        ],
+                        newHireResponse: "Ah ok, so I should focus on genuine business urgency - like upcoming budget cycles or strategic initiatives - rather than using artificial pressure tactics that undermine trust."
+                    },
+                    {
+                        message: "The CFO wants to know about implementation timelines and adoption risk. I'm just going to say it's quick and easy - maybe 2 weeks tops. They don't want to hear about complexity or potential challenges, right?",
+                        isCorrect: false,
+                        corrections: [
+                            { 
+                                text: "Good approach - always minimize implementation concerns to avoid scaring them off.",
+                                isCorrect: false
+                            },
+                            { 
+                                text: "CFOs are highly concerned about implementation risk (51% cite it as top concern). Provide detailed 30/60/90-day plans with realistic timelines, resource needs, and change management support.",
+                                isCorrect: true
+                            },
+                            { 
+                                text: "Tell them implementation will take 6 months minimum to set proper expectations.",
+                                isCorrect: false
+                            }
+                        ],
+                        newHireResponse: "Ah ok, so I need to provide a realistic implementation plan that acknowledges challenges, shows specific milestones and quick wins, and demonstrates our change management support to address their adoption risk concerns."
+                    },
+                    {
+                        message: "I'm preparing my presentation for next week. I'm going to make it really comprehensive - 80 slides covering every single feature and technical specification. CFOs need all the detailed information to make decisions, right?",
+                        isCorrect: false,
+                        corrections: [
+                            { 
+                                text: "Perfect - more information is always better for executive presentations.",
+                                isCorrect: false
+                            },
+                            { 
+                                text: "CFOs require concise, data-driven communication with executive summaries first. Lead with cost benefits and ROI, use clear language without jargon, and keep it brief - they're time-constrained.",
+                                isCorrect: true
+                            },
+                            { 
+                                text: "Skip the presentation and just send them a detailed 50-page technical document instead.",
+                                isCorrect: false
+                            }
+                        ],
+                        newHireResponse: "Ah ok, so I should create a concise presentation with an executive summary up front, leading with ROI and business outcomes, using clear visuals, and save detailed technical specs for appendix or follow-up."
+                    }
+                ]
+            },
+            settings: {
+                totalScenarios: 5
+            }
+        };
+    </script>
+    
+    <!-- ═══════════════════════════════════════════════════════════
+         STYLES SECTION
+    ══════════════════════════════════════════════════════════ -->
+    <style>
+        :root {
+            /* Backgrounds */
+            --bg-dark: #1a1a1a;
+            --bg-chat: #2a2a2a;
+            --bg-message: #3a3a3a;
+            
+            /* Text colors */
+            --text-white: #f5f5f5;
+            --text-gray: #9ca3af;
+            
+            /* Accent colors */
+            --accent-primary: #e5e5e5;
+            --accent-border: #d4d4d4;
+            
+            /* Status colors */
+            --success-green: #10b981;
+            --error-red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-white);
+            line-height: 1.6;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        #app {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: var(--text-gray);
+        }
+
+        .progress-container {
+            margin-bottom: 32px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-chat);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            transition: width 0.3s ease;
+        }
+
+        .progress-label {
+            font-size: 13px;
+            color: var(--text-gray);
+            text-align: right;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chat-container {
+            background: var(--bg-chat);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            min-height: 300px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .chat-container.flash {
+            animation: flashWhite 0.5s ease;
+        }
+
+        @keyframes flashWhite {
+            0%, 100% { background: var(--bg-chat); }
+            50% { background: rgba(255, 255, 255, 0.2); }
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+            opacity: 0;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .sender-name {
+            font-weight: 700;
+            color: var(--text-white);
+            font-size: 15px;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+
+        .message-text {
+            color: var(--text-white);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .reaction-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .reaction-btn {
+            background: transparent;
+            border: 2px solid var(--accent-border);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .reaction-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+
+        .reaction-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .reaction-btn:focus-visible {
+            outline: 3px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+            opacity: 0;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .typing-text {
+            color: var(--text-gray);
+            font-style: italic;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-gray);
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--bg-chat);
+            border-radius: 8px;
+            padding: 32px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 20px;
+        }
+
+        .correction-option {
+            background: var(--bg-message);
+            border: 2px solid var(--accent-border);
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .correction-option:hover:not(.incorrect) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-primary);
+            transform: translateX(4px);
+        }
+
+        .correction-option:active:not(.incorrect) {
+            transform: scale(0.98);
+        }
+
+        .correction-option.incorrect {
+            text-decoration: line-through;
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: var(--error-red);
+            color: var(--error-red);
+        }
+
+        .completion-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .celebration {
+            font-size: 72px;
+            margin-bottom: 24px;
+        }
+
+        .completion-screen h2 {
+            font-size: 36px;
+            color: var(--accent-primary);
+            margin-bottom: 16px;
+        }
+
+        .completion-screen p {
+            font-size: 18px;
+            color: var(--text-gray);
+            margin-bottom: 32px;
+        }
+
+        .next-button {
+            width: 100%;
+            background: var(--accent-primary);
+            color: var(--bg-dark);
+            border: none;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .next-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+        .next-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .next-button:focus-visible {
+            outline: 3px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════════════════════
+         APPLICATION LOGIC
+    ══════════════════════════════════════════════════════════ -->
+    <script>
+        // ============================================
+        // STATE - Single source of truth
+        // ============================================
+        const STATE = {
+            currentScenario: 0,
+            chatHistory: [],
+            showModal: false,
+            incorrectChoices: [],
+            isComplete: false
+        };
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        function init() {
+            // Add initial message from new hire
+            const firstScenario = CONFIG.content.scenarios[STATE.currentScenario];
+            STATE.chatHistory.push({
+                sender: CONFIG.content.newHireName,
+                text: firstScenario.message,
+                timestamp: getCurrentTime(),
+                needsReaction: true
+            });
+            render();
+        }
+
+        // ============================================
+        // RENDERING
+        // ============================================
+        function render() {
+            const app = document.getElementById('app');
+            
+            if (STATE.isComplete) {
+                app.innerHTML = renderCompletionScreen();
+            } else {
+                app.innerHTML = renderChatScreen();
+            }
+            
+            attachEventListeners();
+            
+            // Auto-scroll to bottom of chat
+            setTimeout(() => {
+                const chatContainer = document.getElementById('chatContainer');
+                if (chatContainer) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            }, 100);
+        }
+
+        function renderChatScreen() {
+            const progressPercent = (STATE.currentScenario / CONFIG.settings.totalScenarios) * 100;
+            
+            return `
+                <div class="header">
+                    <h1>${CONFIG.content.title}</h1>
+                    <p>${CONFIG.content.subtitle}</p>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="${progressPercent}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                    </div>
+                    <div class="progress-label">Scenario ${STATE.currentScenario + 1} of ${CONFIG.settings.totalScenarios}</div>
+                </div>
+
+                <div class="chat-container" id="chatContainer">
+                    ${STATE.chatHistory.map((msg, idx) => renderMessage(msg, idx)).join('')}
+                </div>
+
+                ${STATE.showModal ? renderModal() : ''}
+            `;
+        }
+
+        function renderMessage(message, index) {
+            const emoji = message.sender === 'You' ? '👤' : '👨‍💼';
+            
+            return `
+                <div class="message">
+                    <div class="avatar">${emoji}</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="sender-name">${message.sender}</span>
+                            <span class="timestamp">${message.timestamp}</span>
+                        </div>
+                        <div class="message-text">${message.text}</div>
+                        ${message.needsReaction ? `
+                            <div class="reaction-buttons">
+                                <button class="reaction-btn" id="thumbsUpBtn" aria-label="Thumbs up - Approve">👍</button>
+                                <button class="reaction-btn" id="thumbsDownBtn" aria-label="Thumbs down - Provide feedback">👎</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTypingIndicator() {
+            return `
+                <div class="typing-indicator">
+                    <div class="avatar">👨‍💼</div>
+                    <div class="message-content">
+                        <div class="typing-text">
+                            <span>${CONFIG.content.newHireName} is typing</span>
+                            <div class="typing-dots">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderModal() {
+            const scenario = CONFIG.content.scenarios[STATE.currentScenario];
+            
+            return `
+                <div class="modal-overlay" id="modalOverlay" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
+                    <div class="modal">
+                        <h2 class="modal-title" id="modalTitle">What feedback would you give?</h2>
+                        ${scenario.corrections.map((correction, idx) => `
+                            <div 
+                                class="correction-option ${STATE.incorrectChoices.includes(idx) ? 'incorrect' : ''}" 
+                                data-index="${idx}"
+                                role="button"
+                                tabindex="${STATE.incorrectChoices.includes(idx) ? '-1' : '0'}"
+                            >
+                                ${correction.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCompletionScreen() {
+            return `
+                <div class="completion-screen">
+                    <div class="celebration" role="img" aria-label="Celebration">🎉</div>
+                    <h2>Training Complete!</h2>
+                    <p>You've successfully coached ${CONFIG.content.newHireName} on all the key principles for selling to CFOs. They're ready to succeed!</p>
+                    
+                    <button class="next-button" id="restartBtn">Start Over</button>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // EVENT HANDLERS
+        // ============================================
+        function attachEventListeners() {
+            const thumbsUpBtn = document.getElementById('thumbsUpBtn');
+            const thumbsDownBtn = document.getElementById('thumbsDownBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            const correctionOptions = document.querySelectorAll('.correction-option:not(.incorrect)');
+
+            if (thumbsUpBtn) thumbsUpBtn.addEventListener('click', handleThumbsUp);
+            if (thumbsDownBtn) thumbsDownBtn.addEventListener('click', handleThumbsDown);
+            if (restartBtn) restartBtn.addEventListener('click', handleRestart);
+            
+            correctionOptions.forEach(option => {
+                option.addEventListener('click', handleCorrectionChoice);
+                option.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleCorrectionChoice(e);
+                    }
+                });
+            });
+        }
+
+        function handleThumbsUp() {
+            const scenario = CONFIG.content.scenarios[STATE.currentScenario];
+            
+            if (scenario.isCorrect) {
+                // Correct response - flash and move on
+                flashChat();
+                advanceToNextScenario();
+            } else {
+                // Wrong! They approved bad advice - show modal
+                STATE.showModal = true;
+                render();
+            }
+        }
+
+        function handleThumbsDown() {
+            const scenario = CONFIG.content.scenarios[STATE.currentScenario];
+            
+            if (!scenario.isCorrect) {
+                // Correct - they caught the mistake, show modal
+                STATE.showModal = true;
+                render();
+            } else {
+                // Wrong - they rejected good advice
+                // For now, still show modal to explain why it was correct
+                STATE.showModal = true;
+                render();
+            }
+        }
+
+        function handleCorrectionChoice(event) {
+            const index = parseInt(event.currentTarget.dataset.index);
+            const scenario = CONFIG.content.scenarios[STATE.currentScenario];
+            const correction = scenario.corrections[index];
+            
+            if (correction.isCorrect) {
+                // Correct correction chosen
+                STATE.showModal = false;
+                
+                // Remove reaction buttons from current message
+                STATE.chatHistory[STATE.chatHistory.length - 1].needsReaction = false;
+                
+                // Add mentor's correction
+                STATE.chatHistory.push({
+                    sender: 'You',
+                    text: correction.text,
+                    timestamp: getCurrentTime(),
+                    needsReaction: false
+                });
+                
+                render();
+                
+                // Show typing indicator, then add new hire's response
+                setTimeout(() => {
+                    const chatContainer = document.getElementById('chatContainer');
+                    if (chatContainer) {
+                        chatContainer.innerHTML += renderTypingIndicator();
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }
+                    
+                    setTimeout(() => {
+                        // Add new hire's response
+                        STATE.chatHistory.push({
+                            sender: CONFIG.content.newHireName,
+                            text: scenario.newHireResponse,
+                            timestamp: getCurrentTime(),
+                            needsReaction: false
+                        });
+                        
+                        // Flash and advance
+                        flashChat();
+                        render();
+                        
+                        setTimeout(() => {
+                            advanceToNextScenario();
+                        }, 1000);
+                    }, 2000);
+                }, 500);
+            } else {
+                // Wrong correction - mark it and let them try again
+                STATE.incorrectChoices.push(index);
+                render();
+            }
+        }
+
+        function flashChat() {
+            const chatContainer = document.getElementById('chatContainer');
+            if (chatContainer) {
+                chatContainer.classList.add('flash');
+                setTimeout(() => {
+                    chatContainer.classList.remove('flash');
+                }, 500);
+            }
+        }
+
+        function advanceToNextScenario() {
+            STATE.incorrectChoices = [];
+            
+            if (STATE.currentScenario < CONFIG.settings.totalScenarios - 1) {
+                STATE.currentScenario++;
+                const nextScenario = CONFIG.content.scenarios[STATE.currentScenario];
+                
+                render();
+                
+                // Show typing indicator
+                setTimeout(() => {
+                    const chatContainer = document.getElementById('chatContainer');
+                    if (chatContainer) {
+                        chatContainer.innerHTML += renderTypingIndicator();
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }
+                    
+                    // Add the actual message after delay
+                    setTimeout(() => {
+                        STATE.chatHistory.push({
+                            sender: CONFIG.content.newHireName,
+                            text: nextScenario.message,
+                            timestamp: getCurrentTime(),
+                            needsReaction: true
+                        });
+                        
+                        render();
+                    }, 2000);
+                }, 300);
+            } else {
+                STATE.isComplete = true;
+                render();
+            }
+        }
+
+        function handleRestart() {
+            STATE.currentScenario = 0;
+            STATE.chatHistory = [];
+            STATE.showModal = false;
+            STATE.incorrectChoices = [];
+            STATE.isComplete = false;
+            init();
+        }
+
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+        
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+
+        // ============================================
+        // START APPLICATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+    <div id="app" role="main"></div>
+</body>
+</html>
