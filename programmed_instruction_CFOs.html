@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programmed Instruction: CFO Priorities</title>
+    
+    <!-- ═══════════════════════════════════════════════════════════
+         CONFIGURATION SECTION
+    ══════════════════════════════════════════════════════════ -->
+    <script>
+        const CONFIG = {
+            content: {
+                title: "Learn What CFOs Care About",
+                subtitle: "Practice recalling the key concepts. Each round has less help.",
+                
+                statements: [
+                    {
+                        parts: [
+                            "CFOs demand ",
+                            { blank: "quantifiable ROI" },
+                            " with ",
+                            { blank: "12-18 month payback" },
+                            " periods and ",
+                            { blank: "transparent assumptions" },
+                            "."
+                        ]
+                    },
+                    {
+                        parts: [
+                            "CFOs evaluate all purchases through four lenses: ",
+                            { blank: "cost reduction" },
+                            ", ",
+                            { blank: "productivity maximization" },
+                            ", ",
+                            { blank: "revenue growth" },
+                            ", and ",
+                            { blank: "risk mitigation" },
+                            "."
+                        ]
+                    },
+                    {
+                        parts: [
+                            "CFOs seek ",
+                            { blank: "strategic partners" },
+                            " who bring ",
+                            { blank: "deep industry expertise" },
+                            " and ",
+                            { blank: "third-party validation" },
+                            ", not just competitive pricing."
+                        ]
+                    },
+                    {
+                        parts: [
+                            "CFOs require ",
+                            { blank: "concise, data-driven communication" },
+                            " with ",
+                            { blank: "executive summaries first" },
+                            " and ",
+                            { blank: "detailed implementation plans" },
+                            " that address adoption risk."
+                        ]
+                    }
+                ],
+                
+                stages: [
+                    { name: "Read", instruction: "Read this statement carefully:" },
+                    { name: "Type (shown)", instruction: "Type over the gray text:" },
+                    { name: "Type (hints)", instruction: "Type the terms using hints:" },
+                    { name: "Recall", instruction: "Type from memory:" }
+                ]
+            },
+            settings: {
+                totalStatements: 4,
+                totalStages: 4,
+                similarityThreshold: 0.75
+            }
+        };
+    </script>
+    
+    <!-- ═══════════════════════════════════════════════════════════
+         STYLES SECTION
+    ══════════════════════════════════════════════════════════ -->
+    <style>
+        :root {
+            /* Backgrounds */
+            --bg-dark: #1a1a1a;
+            --bg-code: #2a2a2a;
+            
+            /* Text colors */
+            --text-white: #f5f5f5;
+            --text-gray: #9ca3af;
+            
+            /* Accent colors - CUSTOMIZE THESE for your brand */
+            --accent-primary: #e5e5e5;
+            --accent-primary-hover: #ffffff;
+            --accent-border: #d4d4d4;
+            
+            /* Status colors */
+            --error-red: #ef4444;
+            
+            /* Legacy variable mappings (for backwards compatibility) */
+            --accent-green: var(--accent-primary);
+            --accent-green-dark: var(--accent-primary-hover);
+            --border-green: var(--accent-border);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-white);
+            line-height: 1.6;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        #app {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--accent-green);
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: var(--text-gray);
+        }
+
+        .progress-container {
+            margin-bottom: 32px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-code);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            transition: width 0.3s ease;
+        }
+
+        .progress-label {
+            font-size: 13px;
+            color: var(--text-gray);
+            text-align: right;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .instruction {
+            font-size: 16px;
+            color: var(--text-white);
+            margin-bottom: 16px;
+        }
+
+        .code-block {
+            background: var(--bg-code);
+            border-left: 4px solid var(--border-green);
+            padding: 24px;
+            border-radius: 4px;
+            margin-bottom: 32px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 18px;
+            line-height: 2;
+        }
+
+        .statement-line {
+            color: var(--text-white);
+            display: inline;
+        }
+
+        .blank-input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--accent-green);
+            color: var(--accent-green);
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 18px;
+            font-style: italic;
+            padding: 2px 4px;
+            outline: none;
+            display: inline-block;
+            vertical-align: baseline;
+        }
+
+        .blank-input::placeholder {
+            color: var(--text-gray);
+            font-style: italic;
+            opacity: 1;
+        }
+
+        .blank-input:focus {
+            background: rgba(74, 222, 128, 0.1);
+            border-bottom-color: var(--accent-green-dark);
+        }
+
+        .blank-input.correct {
+            color: var(--accent-green);
+            font-style: normal;
+            border-bottom-color: var(--accent-green);
+        }
+
+        .blank-input.incorrect {
+            color: var(--error-red);
+            border-bottom-color: var(--error-red);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 16px;
+        }
+
+        .next-button {
+            flex: 2;
+            background: var(--accent-green);
+            color: var(--bg-dark);
+            border: none;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .next-button:hover:not(:disabled) {
+            background: var(--accent-green-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.4);
+        }
+
+        .next-button:disabled {
+            background: #374151;
+            color: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .next-button:focus-visible {
+            outline: 3px solid var(--accent-green);
+            outline-offset: 2px;
+        }
+
+        .show-answer-button {
+            flex: 1;
+            background: transparent;
+            color: var(--accent-green);
+            border: 2px solid var(--accent-green);
+            padding: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .show-answer-button:hover {
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .show-answer-button:focus-visible {
+            outline: 3px solid var(--accent-green);
+            outline-offset: 2px;
+        }
+
+        .completion-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .celebration {
+            font-size: 72px;
+            margin-bottom: 24px;
+        }
+
+        .completion-screen h2 {
+            font-size: 36px;
+            color: var(--accent-green);
+            margin-bottom: 16px;
+        }
+
+        .completion-screen p {
+            font-size: 18px;
+            color: var(--text-gray);
+            margin-bottom: 32px;
+        }
+
+        .summary {
+            background: var(--bg-code);
+            border-left: 4px solid var(--border-green);
+            padding: 24px;
+            border-radius: 4px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .summary-item {
+            margin-bottom: 16px;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .summary-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .summary-keyword {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════════════════════
+         APPLICATION LOGIC
+    ══════════════════════════════════════════════════════════ -->
+    <script>
+        // ============================================
+        // STATE
+        // ============================================
+        const STATE = {
+            currentStatement: 0,
+            currentStage: 0,
+            userInputs: [],
+            inputStatuses: [],
+            isComplete: false
+        };
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        function init() {
+            resetInputs();
+            render();
+        }
+
+        function resetInputs() {
+            const currentStatement = CONFIG.content.statements[STATE.currentStatement];
+            const blankCount = currentStatement.parts.filter(p => typeof p === 'object').length;
+            STATE.userInputs = new Array(blankCount).fill('');
+            STATE.inputStatuses = new Array(blankCount).fill('');
+        }
+
+        // ============================================
+        // RENDERING
+        // ============================================
+        function render() {
+            const app = document.getElementById('app');
+            
+            if (STATE.isComplete) {
+                app.innerHTML = renderCompletionScreen();
+            } else {
+                app.innerHTML = renderLearningScreen();
+            }
+            
+            attachEventListeners();
+            
+            // Focus first input if in interactive stage
+            if (STATE.currentStage > 0) {
+                setTimeout(() => {
+                    const firstInput = document.querySelector('.blank-input');
+                    if (firstInput) firstInput.focus();
+                }, 100);
+            }
+        }
+
+        function renderLearningScreen() {
+            const currentStatement = CONFIG.content.statements[STATE.currentStatement];
+            const currentStageConfig = CONFIG.content.stages[STATE.currentStage];
+            const roundNumber = (STATE.currentStatement * CONFIG.settings.totalStages) + STATE.currentStage + 1;
+            const totalRounds = CONFIG.settings.totalStatements * CONFIG.settings.totalStages;
+            const progressPercent = ((roundNumber - 1) / totalRounds) * 100;
+            
+            return `
+                <div class="header">
+                    <h1>${CONFIG.content.title}</h1>
+                    <p>${CONFIG.content.subtitle}</p>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="${progressPercent}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                    </div>
+                    <div class="progress-label">Round ${roundNumber} of ${totalRounds}</div>
+                </div>
+
+                <div class="instruction">
+                    ${currentStageConfig.instruction}
+                </div>
+
+                <div class="code-block">
+                    ${renderStatement(currentStatement, STATE.currentStage)}
+                </div>
+
+                ${renderButtons()}
+            `;
+        }
+
+        function renderStatement(statement, stage) {
+            let blankIndex = 0;
+            let html = '<div class="statement-line">';
+            
+            statement.parts.forEach(part => {
+                if (typeof part === 'string') {
+                    html += part;
+                } else {
+                    // It's a blank
+                    const blank = part.blank;
+                    const currentBlankIndex = blankIndex;
+                    
+                    if (stage === 0) {
+                        // Read - show full text
+                        html += blank;
+                    } else {
+                        // Interactive stages - show input
+                        const inputId = `input-${currentBlankIndex}`;
+                        const width = Math.max(blank.length * 11, 100);
+                        
+                        let placeholder = '';
+                        if (stage === 1) {
+                            placeholder = blank;
+                        } else if (stage === 2) {
+                            placeholder = getFirstLetterHint(blank);
+                        } else {
+                            placeholder = '_'.repeat(Math.min(blank.length, 20));
+                        }
+                        
+                        const status = STATE.inputStatuses[currentBlankIndex];
+                        const value = STATE.userInputs[currentBlankIndex];
+                        
+                        html += `<label for="${inputId}" class="sr-only">Blank ${currentBlankIndex + 1}: ${blank}</label>`;
+                        html += `<input 
+                            type="text" 
+                            id="${inputId}"
+                            class="blank-input ${status}"
+                            data-index="${currentBlankIndex}"
+                            value="${value}"
+                            placeholder="${placeholder}"
+                            style="width: ${width}px"
+                            aria-label="Blank ${currentBlankIndex + 1}: ${blank}"
+                            autocomplete="off"
+                            spellcheck="false"
+                        />`;
+                    }
+                    
+                    blankIndex++;
+                }
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        function renderButtons() {
+            if (STATE.currentStage === 0) {
+                return `
+                    <button class="next-button" id="nextBtn">Next</button>
+                `;
+            } else {
+                const allCorrect = STATE.inputStatuses.every(status => status === 'correct');
+                return `
+                    <div class="button-group">
+                        <button class="show-answer-button" id="showAnswerBtn">Show Answers</button>
+                        <button class="next-button" id="nextBtn" ${allCorrect ? '' : 'disabled'} aria-disabled="${!allCorrect}">
+                            Next
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderCompletionScreen() {
+            return `
+                <div class="completion-screen">
+                    <div class="celebration" role="img" aria-label="Celebration">🎉</div>
+                    <h2>Congratulations!</h2>
+                    <p>You've mastered the key CFO priorities.</p>
+                    
+                    <div class="summary">
+                        ${CONFIG.content.statements.map((stmt) => {
+                            let text = '';
+                            stmt.parts.forEach(part => {
+                                if (typeof part === 'string') {
+                                    text += part;
+                                } else {
+                                    text += `<span class="summary-keyword">${part.blank}</span>`;
+                                }
+                            });
+                            return `<div class="summary-item">${text}</div>`;
+                        }).join('')}
+                    </div>
+                    
+                    <button class="next-button" id="restartBtn">Practice Again</button>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // EVENT HANDLERS
+        // ============================================
+        function attachEventListeners() {
+            const nextBtn = document.getElementById('nextBtn');
+            const showAnswerBtn = document.getElementById('showAnswerBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            const inputs = document.querySelectorAll('.blank-input');
+
+            if (nextBtn) nextBtn.addEventListener('click', handleNext);
+            if (showAnswerBtn) showAnswerBtn.addEventListener('click', handleShowAnswer);
+            if (restartBtn) restartBtn.addEventListener('click', handleRestart);
+            
+            inputs.forEach(input => {
+                input.addEventListener('input', handleInput);
+            });
+        }
+
+        function handleNext() {
+            if (STATE.currentStage === 0 || STATE.inputStatuses.every(status => status === 'correct')) {
+                if (STATE.currentStage < CONFIG.settings.totalStages - 1) {
+                    STATE.currentStage++;
+                    resetInputs();
+                    render();
+                } else {
+                    if (STATE.currentStatement < CONFIG.settings.totalStatements - 1) {
+                        STATE.currentStatement++;
+                        STATE.currentStage = 0;
+                        resetInputs();
+                        render();
+                    } else {
+                        STATE.isComplete = true;
+                        render();
+                    }
+                }
+            }
+        }
+
+        function handleInput(event) {
+            const index = parseInt(event.target.dataset.index);
+            const value = event.target.value;
+            STATE.userInputs[index] = value;
+            
+            const currentStatement = CONFIG.content.statements[STATE.currentStatement];
+            let blankIndex = 0;
+            let correctAnswer = '';
+            
+            for (const part of currentStatement.parts) {
+                if (typeof part === 'object') {
+                    if (blankIndex === index) {
+                        correctAnswer = part.blank;
+                        break;
+                    }
+                    blankIndex++;
+                }
+            }
+            
+            const similarity = calculateSimilarity(value, correctAnswer);
+            
+            // Update status
+            if (similarity >= CONFIG.settings.similarityThreshold) {
+                STATE.inputStatuses[index] = 'correct';
+            } else if (value.length > 0) {
+                STATE.inputStatuses[index] = 'incorrect';
+            } else {
+                STATE.inputStatuses[index] = '';
+            }
+            
+            // Update just this input's class without re-rendering
+            event.target.className = 'blank-input ' + STATE.inputStatuses[index];
+            
+            // Update the Next button state
+            const allCorrect = STATE.inputStatuses.every(status => status === 'correct');
+            const nextBtn = document.getElementById('nextBtn');
+            if (nextBtn) {
+                nextBtn.disabled = !allCorrect;
+                nextBtn.setAttribute('aria-disabled', !allCorrect);
+            }
+        }
+
+        function handleShowAnswer() {
+            const currentStatement = CONFIG.content.statements[STATE.currentStatement];
+            const answers = [];
+            
+            currentStatement.parts.forEach(part => {
+                if (typeof part === 'object') {
+                    answers.push(part.blank);
+                }
+            });
+            
+            STATE.userInputs = [...answers];
+            STATE.inputStatuses = new Array(answers.length).fill('correct');
+            render();
+        }
+
+        function handleRestart() {
+            STATE.currentStatement = 0;
+            STATE.currentStage = 0;
+            resetInputs();
+            STATE.isComplete = false;
+            render();
+        }
+
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+        
+        function getFirstLetterHint(text) {
+            return text.split(' ').map(word => {
+                if (word.length === 0) return '';
+                return word[0] + '_'.repeat(word.length - 1);
+            }).join(' ');
+        }
+
+        function calculateSimilarity(str1, str2) {
+            const s1 = str1.toLowerCase().trim();
+            const s2 = str2.toLowerCase().trim();
+            
+            if (s1 === s2) return 1;
+            
+            const distance = levenshteinDistance(s1, s2);
+            const maxLength = Math.max(s1.length, s2.length);
+            
+            return 1 - (distance / maxLength);
+        }
+
+        function levenshteinDistance(str1, str2) {
+            const m = str1.length;
+            const n = str2.length;
+            const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+            
+            for (let i = 0; i <= m; i++) dp[i][0] = i;
+            for (let j = 0; j <= n; j++) dp[0][j] = j;
+            
+            for (let i = 1; i <= m; i++) {
+                for (let j = 1; j <= n; j++) {
+                    if (str1[i - 1] === str2[j - 1]) {
+                        dp[i][j] = dp[i - 1][j - 1];
+                    } else {
+                        dp[i][j] = Math.min(
+                            dp[i - 1][j] + 1,
+                            dp[i][j - 1] + 1,
+                            dp[i - 1][j - 1] + 1
+                        );
+                    }
+                }
+            }
+            
+            return dp[m][n];
+        }
+
+        // ============================================
+        // START APPLICATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+    <div id="app" role="main"></div>
+</body>
+</html>
