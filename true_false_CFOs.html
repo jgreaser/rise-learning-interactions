@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>True/False Quiz: CFO Priorities</title>
+    
+    <!-- ═══════════════════════════════════════════════════════════
+         CONFIGURATION SECTION - EDIT THIS SECTION TO UPDATE CONTENT
+    ══════════════════════════════════════════════════════════ -->
+    <script>
+        const CONFIG = {
+            content: {
+                title: "CFO Priorities Quiz",
+                subtitle: "Test your knowledge about what CFOs care about when talking to sellers.",
+                
+                questions: [
+                    {
+                        statement: "CFOs demand quantifiable ROI with 12-18 month payback periods and transparent assumptions.",
+                        correct: true,
+                        feedback: {
+                            correct: "Correct! CFOs are under intense pressure to demonstrate fast, measurable returns with clear assumptions.",
+                            incorrect: "Actually, this is true. CFOs require quantifiable ROI with specific payback timelines and transparent assumptions."
+                        }
+                    },
+                    {
+                        statement: "CFOs evaluate purchases primarily based on the lowest price available.",
+                        correct: false,
+                        feedback: {
+                            correct: "Correct! CFOs evaluate through four lenses: cost reduction, productivity, revenue growth, and risk mitigation - not just price.",
+                            incorrect: "This is false. While cost matters, CFOs evaluate purchases through four lenses: cost reduction, productivity maximization, revenue growth, and risk mitigation."
+                        }
+                    },
+                    {
+                        statement: "CFOs seek strategic partners who bring deep industry expertise and third-party validation, not just competitive pricing.",
+                        correct: true,
+                        feedback: {
+                            correct: "Correct! The partner dimension outweighs price in vendor evaluation, as CFOs need strategic advisors with proven expertise.",
+                            incorrect: "This is actually true. CFOs prioritize strategic partnerships with industry expertise over just competitive pricing."
+                        }
+                    },
+                    {
+                        statement: "CFOs prefer detailed, comprehensive presentations that cover every aspect of a product.",
+                        correct: false,
+                        feedback: {
+                            correct: "Correct! CFOs require concise, data-driven communication with executive summaries first - they are time-constrained.",
+                            incorrect: "This is false. CFOs require concise, data-driven communication with executive summaries first. They value brevity and clarity."
+                        }
+                    },
+                    {
+                        statement: "Risk mitigation is now a top priority for CFOs, including vendor risk and cybersecurity concerns.",
+                        correct: true,
+                        feedback: {
+                            correct: "Correct! 42% of CFOs cite enterprise risk management as their top priority for 2025, including cyber and vendor risks.",
+                            incorrect: "This is actually true. Risk mitigation, including cybersecurity and vendor risk, is a top CFO priority."
+                        }
+                    },
+                    {
+                        statement: "CFOs make decisions based solely on financial metrics without considering strategic partnerships.",
+                        correct: false,
+                        feedback: {
+                            correct: "Correct! CFOs balance financial metrics with the value of strategic partnerships, industry expertise, and third-party validation.",
+                            incorrect: "This is false. CFOs seek strategic partners and evaluate the partnership dimension alongside financial metrics."
+                        }
+                    },
+                    {
+                        statement: "Implementation plans and adoption risk are major concerns for CFOs when evaluating vendors.",
+                        correct: true,
+                        feedback: {
+                            correct: "Correct! 51% of CFOs worry about technology deployment risk. They require detailed implementation plans that address adoption challenges.",
+                            incorrect: "This is actually true. CFOs are highly concerned about implementation risk and require detailed adoption plans."
+                        }
+                    },
+                    {
+                        statement: "CFOs prefer vendors who use artificial urgency and exploding offers to close deals quickly.",
+                        correct: false,
+                        feedback: {
+                            correct: "Correct! Artificial urgency and pressure tactics damage credibility with CFOs, who are sophisticated buyers.",
+                            incorrect: "This is false. CFOs view artificial urgency and exploding offers negatively - they damage vendor credibility."
+                        }
+                    }
+                ]
+            },
+            settings: {
+                totalQuestions: 8
+            },
+            feedback: {
+                complete: "Quiz Complete! You've finished all questions."
+            }
+        };
+    </script>
+    
+    <!-- ═══════════════════════════════════════════════════════════
+         STYLES SECTION
+    ══════════════════════════════════════════════════════════ -->
+    <style>
+        :root {
+            /* Backgrounds */
+            --bg-dark: #1a1a1a;
+            --bg-code: #2a2a2a;
+            
+            /* Text colors */
+            --text-white: #f5f5f5;
+            --text-gray: #9ca3af;
+            
+            /* Accent colors - CUSTOMIZE THESE for your brand */
+            --accent-primary: #e5e5e5;
+            --accent-primary-hover: #ffffff;
+            --accent-border: #d4d4d4;
+            
+            /* Status colors */
+            --success-green: #10b981;
+            --error-red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-white);
+            line-height: 1.6;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        #app {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: var(--text-gray);
+        }
+
+        .progress-container {
+            margin-bottom: 32px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-code);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            transition: width 0.3s ease;
+        }
+
+        .progress-label {
+            font-size: 13px;
+            color: var(--text-gray);
+            text-align: right;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .instruction {
+            font-size: 16px;
+            color: var(--text-white);
+            margin-bottom: 16px;
+        }
+
+        .question-block {
+            background: var(--bg-code);
+            border-left: 4px solid var(--accent-border);
+            padding: 24px;
+            border-radius: 4px;
+            margin-bottom: 24px;
+            font-size: 18px;
+            line-height: 1.8;
+        }
+
+        .question-block.answered-correct {
+            border-left-color: var(--success-green);
+        }
+
+        .question-block.answered-incorrect {
+            border-left-color: var(--error-red);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .answer-button {
+            flex: 1;
+            background: transparent;
+            color: var(--accent-primary);
+            border: 2px solid var(--accent-primary);
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .answer-button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .answer-button:focus-visible {
+            outline: 3px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+
+        .answer-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .answer-button.selected-correct {
+            background: var(--success-green);
+            border-color: var(--success-green);
+            color: white;
+        }
+
+        .answer-button.selected-incorrect {
+            background: var(--error-red);
+            border-color: var(--error-red);
+            color: white;
+        }
+
+        .feedback-box {
+            background: var(--bg-code);
+            border-left: 4px solid var(--accent-border);
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 24px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .feedback-box.correct {
+            border-left-color: var(--success-green);
+            color: var(--success-green);
+        }
+
+        .feedback-box.incorrect {
+            border-left-color: var(--error-red);
+            color: var(--error-red);
+        }
+
+        .next-button {
+            width: 100%;
+            background: var(--accent-primary);
+            color: var(--bg-dark);
+            border: none;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .next-button:hover:not(:disabled) {
+            background: var(--accent-primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+        .next-button:disabled {
+            background: #374151;
+            color: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .next-button:focus-visible {
+            outline: 3px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+
+        .completion-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .celebration {
+            font-size: 72px;
+            margin-bottom: 24px;
+        }
+
+        .completion-screen h2 {
+            font-size: 36px;
+            color: var(--accent-primary);
+            margin-bottom: 16px;
+        }
+
+        .completion-screen p {
+            font-size: 18px;
+            color: var(--text-gray);
+            margin-bottom: 32px;
+        }
+
+        .score-display {
+            background: var(--bg-code);
+            border-left: 4px solid var(--accent-border);
+            padding: 32px;
+            border-radius: 4px;
+            margin-bottom: 32px;
+        }
+
+        .score-number {
+            font-size: 64px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 8px;
+        }
+
+        .score-label {
+            font-size: 18px;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════════════════════
+         APPLICATION LOGIC
+    ══════════════════════════════════════════════════════════ -->
+    <script>
+        // ============================================
+        // STATE - Single source of truth
+        // ============================================
+        const STATE = {
+            currentQuestion: 0,
+            userAnswer: null,
+            showFeedback: false,
+            score: 0,
+            isComplete: false
+        };
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        function init() {
+            render();
+        }
+
+        // ============================================
+        // RENDERING
+        // ============================================
+        function render() {
+            const app = document.getElementById('app');
+            
+            if (STATE.isComplete) {
+                app.innerHTML = renderCompletionScreen();
+            } else {
+                app.innerHTML = renderQuestionScreen();
+            }
+            
+            attachEventListeners();
+        }
+
+        function renderQuestionScreen() {
+            const question = CONFIG.content.questions[STATE.currentQuestion];
+            const progressPercent = (STATE.currentQuestion / CONFIG.settings.totalQuestions) * 100;
+            
+            return `
+                <div class="header">
+                    <h1>${CONFIG.content.title}</h1>
+                    <p>${CONFIG.content.subtitle}</p>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="${progressPercent}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                    </div>
+                    <div class="progress-label">Question ${STATE.currentQuestion + 1} of ${CONFIG.settings.totalQuestions}</div>
+                </div>
+
+                <div class="instruction">
+                    True or False?
+                </div>
+
+                <div class="question-block ${STATE.showFeedback ? (STATE.userAnswer === question.correct ? 'answered-correct' : 'answered-incorrect') : ''}">
+                    ${question.statement}
+                </div>
+
+                <div class="button-group">
+                    <button 
+                        class="answer-button ${STATE.userAnswer === true ? (STATE.showFeedback ? (question.correct === true ? 'selected-correct' : 'selected-incorrect') : '') : ''}"
+                        id="trueBtn"
+                        ${STATE.showFeedback ? 'disabled' : ''}
+                        aria-label="True"
+                    >
+                        True
+                    </button>
+                    <button 
+                        class="answer-button ${STATE.userAnswer === false ? (STATE.showFeedback ? (question.correct === false ? 'selected-correct' : 'selected-incorrect') : '') : ''}"
+                        id="falseBtn"
+                        ${STATE.showFeedback ? 'disabled' : ''}
+                        aria-label="False"
+                    >
+                        False
+                    </button>
+                </div>
+
+                ${STATE.showFeedback ? renderFeedback(question) : ''}
+
+                ${STATE.showFeedback ? `
+                    <button class="next-button" id="nextBtn">
+                        ${STATE.currentQuestion < CONFIG.settings.totalQuestions - 1 ? 'Next Question' : 'View Results'}
+                    </button>
+                ` : ''}
+            `;
+        }
+
+        function renderFeedback(question) {
+            const isCorrect = STATE.userAnswer === question.correct;
+            const feedbackText = isCorrect ? question.feedback.correct : question.feedback.incorrect;
+            
+            return `
+                <div class="feedback-box ${isCorrect ? 'correct' : 'incorrect'}">
+                    ${feedbackText}
+                </div>
+            `;
+        }
+
+        function renderCompletionScreen() {
+            const percentage = Math.round((STATE.score / CONFIG.settings.totalQuestions) * 100);
+            
+            return `
+                <div class="completion-screen">
+                    <div class="celebration" role="img" aria-label="Celebration">🎉</div>
+                    <h2>${CONFIG.feedback.complete}</h2>
+                    <p>Here's how you did:</p>
+                    
+                    <div class="score-display">
+                        <div class="score-number">${STATE.score}/${CONFIG.settings.totalQuestions}</div>
+                        <div class="score-label">${percentage}% Correct</div>
+                    </div>
+                    
+                    <button class="next-button" id="restartBtn">Take Quiz Again</button>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // EVENT HANDLERS
+        // ============================================
+        function attachEventListeners() {
+            const trueBtn = document.getElementById('trueBtn');
+            const falseBtn = document.getElementById('falseBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const restartBtn = document.getElementById('restartBtn');
+
+            if (trueBtn) trueBtn.addEventListener('click', () => handleAnswer(true));
+            if (falseBtn) falseBtn.addEventListener('click', () => handleAnswer(false));
+            if (nextBtn) nextBtn.addEventListener('click', handleNext);
+            if (restartBtn) restartBtn.addEventListener('click', handleRestart);
+        }
+
+        function handleAnswer(answer) {
+            if (STATE.showFeedback) return;
+            
+            STATE.userAnswer = answer;
+            STATE.showFeedback = true;
+            
+            const question = CONFIG.content.questions[STATE.currentQuestion];
+            if (answer === question.correct) {
+                STATE.score++;
+            }
+            
+            render();
+        }
+
+        function handleNext() {
+            if (STATE.currentQuestion < CONFIG.settings.totalQuestions - 1) {
+                STATE.currentQuestion++;
+                STATE.userAnswer = null;
+                STATE.showFeedback = false;
+                render();
+            } else {
+                STATE.isComplete = true;
+                render();
+            }
+        }
+
+        function handleRestart() {
+            STATE.currentQuestion = 0;
+            STATE.userAnswer = null;
+            STATE.showFeedback = false;
+            STATE.score = 0;
+            STATE.isComplete = false;
+            render();
+        }
+
+        // ============================================
+        // START APPLICATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+    <div id="app" role="main"></div>
+</body>
+</html>
