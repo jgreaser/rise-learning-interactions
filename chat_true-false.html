@@ -10,95 +10,128 @@
     ══════════════════════════════════════════════════════════ -->
     <script>
         const CONFIG = {
-            content: {
-                title: "Coach Your Colleague",
-                subtitle: "Help them prepare",
-                
-                colleague: {
-                    name: "Alexea",
-                    avatar: "👤"
-                },
-                
-                conversation: [
-                    {
-                        type: "message",
-                        speaker: "colleague",
-                        text: "Hey! Can I run something by you? I'm about to talk to the CFO."
-                    },
-                    {
-                        type: "choice",
-                        speaker: "learner",
-                        options: [
-                            { text: "Sure, what's up?" },
-                            { text: "I'm busy right now" }
-                        ]
-                    },
-                    {
-                        type: "message",
-                        speaker: "colleague",
-                        text: "I'm going to start with a 20 minute demo of features."
-                    },
-                    {
-                        type: "reaction",
-                        speaker: "learner",
-                        question: "Is this a good approach?",
-                        correctAnswer: "bad",
-                        feedback: {
-                            correct: "Right! CFOs want business value first, not features.",
-                            incorrect: "Actually, CFOs want ROI first, not feature demos."
-                        }
-                    },
-                    {
-                        type: "why",
-                        speaker: "learner",
-                        question: "Why is this problematic?",
-                        options: [
-                            { text: "CFOs want ROI data first", isCorrect: true },
-                            { text: "20 minutes is too long", isCorrect: false },
-                            { text: "Demos are boring", isCorrect: false }
-                        ],
-                        feedback: {
-                            correct: "Exactly! Lead with business value.",
-                            incorrect: "Think about what CFOs care about most."
-                        }
-                    },
-                    {
-                        type: "message",
-                        speaker: "colleague",
-                        text: "Good point! I'll lead with ROI instead."
-                    },
-                    {
-                        type: "message",
-                        speaker: "colleague",
-                        text: "Thanks for the help! Gotta run to the call. 🏃"
-                    }
-                ],
-                
-                outcome: {
-                    success: {
-                        message: "The call went great! Your advice really helped! 🎉",
-                        summary: [
-                            "✓ Led with business value",
-                            "✓ Focused on ROI",
-                            "✓ Kept it concise"
-                        ]
-                    },
-                    failure: {
-                        message: "The call didn't go well. I should have been better prepared. 😬",
-                        summary: [
-                            "✗ Started with features instead of value",
-                            "✗ Didn't lead with ROI",
-                            "✗ CFO seemed disengaged"
-                        ]
-                    }
+    content: {
+        title: "Coach Your Colleague",
+        subtitle: "Help them prepare",
+        
+        colleague: {
+            name: "Alex",
+            avatar: "👤"
+        },
+        
+        conversation: [
+            {
+                type: "message",
+                speaker: "colleague",
+                text: "Hey! Can I run something by you? I'm about to talk to the CFO."
+            },
+            {
+                type: "choice",
+                speaker: "learner",
+                options: [
+                    { text: "Sure, what's up?" },
+                    { text: "I'm busy right now" }
+                ]
+            },
+            {
+                type: "message",
+                speaker: "colleague",
+                text: "So the CFO wants to hear about our new analytics platform. It's a big deal - could mean budget approval for the whole year."
+            },
+            {
+                type: "message",
+                speaker: "colleague",
+                text: "I've got 15 minutes with her. Here's my plan:"
+            },
+            {
+                type: "message",
+                speaker: "colleague",
+                text: "I'm going to start with a 10 minute demo of all the features - the dashboards, the data visualizations, the export options, everything."
+            },
+            {
+                type: "reaction",
+                speaker: "learner",
+                question: "Is this a good approach?",
+                correctAnswer: "bad",
+                feedback: {
+                    correct: "Right! CFOs want business value first, not features. Lead with ROI and outcomes.",
+                    incorrect: "Actually, CFOs care most about ROI and business impact, not feature details."
                 }
             },
-            settings: {
-                typingSpeed: 30,
-                typingDelay: 800,
-                successThreshold: 0.7 // 70% correct for good outcome
+            // Branching happens here in the code
+            {
+                type: "message",
+                speaker: "colleague",
+                text: "Then I thought I'd walk through our 6-month implementation timeline, week by week."
+            },
+            {
+                type: "reaction",
+                speaker: "learner",
+                question: "Should Alex go into this level of detail?",
+                correctAnswer: "bad",
+                feedback: {
+                    correct: "Exactly! CFOs want the high-level timeline, not week-by-week details. Keep it strategic.",
+                    incorrect: "CFOs typically want strategic overview, not granular week-by-week plans."
+                }
+            },
+            {
+                type: "message",
+                speaker: "colleague",
+                text: "Good thinking. I'll keep it high-level - just the key milestones."
+            },
+            {
+                type: "message",
+                speaker: "colleague",
+                text: "Oh, and one more thing - should I bring up the technical challenges we might face with the legacy systems?"
+            },
+            {
+                type: "choice",
+                speaker: "learner",
+                options: [
+                    { text: "Yes, be transparent about risks" },
+                    { text: "No, focus on the benefits" },
+                    { text: "Mention them briefly if asked" }
+                ]
+            },
+            {
+                type: "message",
+                speaker: "colleague",
+                text: "That makes sense. I'll have those ready but won't lead with problems."
+            },
+            {
+                type: "message",
+                speaker: "colleague",
+                text: "Okay, I think I'm ready. Wish me luck! 🤞"
             }
-        };
+        ],
+        
+        outcome: {
+            success: {
+                message: "That went really well! The CFO approved the budget and loved the business-focused approach! 🎉",
+                summary: [
+                    "✓ Led with business value and ROI",
+                    "✓ Kept details strategic, not tactical",
+                    "✓ Balanced transparency with optimism",
+                    "✓ Respected the CFO's time and priorities"
+                ]
+            },
+            failure: {
+                message: "The meeting didn't go as planned. The CFO seemed distracted and cut it short. She wants to 'revisit this later.' 😬",
+                summary: [
+                    "✗ Started with features instead of business value",
+                    "✗ Got too detailed on implementation",
+                    "✗ Didn't focus on what CFOs care about",
+                    "✗ Lost her attention early in the conversation"
+                ]
+            }
+        }
+    },
+    settings: {
+        typingSpeed: 30,
+        typingDelay: 800,
+        successThreshold: 0.5 // 50% correct for good outcome (out of 3 decision points)
+    }
+};
     </script>
     
     <!-- ═══════════════════════════════════════════════════════════
@@ -1049,45 +1082,33 @@
             
             render();
         }
-function handleContinue() {
-    const interaction = STATE.currentInteraction;
 
-    if (interaction.type === 'reaction') {
-        const wasCorrect = STATE.reactionCorrect;
-        STATE.reactionFeedback = null;
-        STATE.lastReactionClicked = null;
-        STATE.awaitingInteraction = false;
-
-        // Advance to next step(s) depending on correctness
-        if (wasCorrect) {
-            // Learner was correct → continue normally
-            STATE.currentStep++;
-        } else {
-            // Learner was incorrect → skip "why" and any follow-up correction messages
-            STATE.currentStep++;
-
-            // Skip any 'why' or 'message' steps that represent the correction
-            while (STATE.currentStep < CONFIG.content.conversation.length) {
-                const nextStep = CONFIG.content.conversation[STATE.currentStep];
-                if (nextStep.type === 'why' || 
-                   (nextStep.type === 'message' && nextStep.text.includes("Good point!"))) {
-                    STATE.currentStep++;
-                } else {
-                    break;
+        function handleContinue() {
+            const interaction = STATE.currentInteraction;
+            
+            if (interaction.type === 'reaction') {
+                STATE.reactionFeedback = null;
+                STATE.lastReactionClicked = null;
+                STATE.currentStep++;
+                STATE.awaitingInteraction = false;
+                
+                while (STATE.currentStep < CONFIG.content.conversation.length) {
+                    const nextStep = CONFIG.content.conversation[STATE.currentStep];
+                    if (nextStep.type === 'why') {
+                        STATE.currentStep++;
+                    } else {
+                        break;
+                    }
                 }
+                
+                processNextStep();
+            } else if (interaction.type === 'why') {
+                STATE.whyFeedback = null;
+                STATE.currentStep++;
+                STATE.awaitingInteraction = false;
+                processNextStep();
             }
         }
-
-        processNextStep();
-
-    } else if (interaction.type === 'why') {
-        STATE.whyFeedback = null;
-        STATE.currentStep++;
-        STATE.awaitingInteraction = false;
-        processNextStep();
-    }
-}
-
 
         function handleShowTakeaways() {
             STATE.showSummary = true;
