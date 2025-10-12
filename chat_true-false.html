@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slack Coaching Interaction</title>
+    
+    <!-- ═══════════════════════════════════════════════════════════
+         CONFIGURATION SECTION
+    ══════════════════════════════════════════════════════════ -->
+    <script>
+        const CONFIG = {
+            content: {
+                title: "Coach Your Colleague",
+                subtitle: "Help them prepare",
+                
+                colleague: {
+                    name: "Alexea",
+                    avatar: "👤"
+                },
+                
+                conversation: [
+                    {
+                        type: "message",
+                        speaker: "colleague",
+                        text: "Hey! Can I run something by you? I'm about to talk to the CFO."
+                    },
+                    {
+                        type: "choice",
+                        speaker: "learner",
+                        options: [
+                            { text: "Sure, what's up?" },
+                            { text: "I'm busy right now" }
+                        ]
+                    },
+                    {
+                        type: "message",
+                        speaker: "colleague",
+                        text: "I'm going to start with a 20 minute demo of features."
+                    },
+                    {
+                        type: "reaction",
+                        speaker: "learner",
+                        question: "Is this a good approach?",
+                        correctAnswer: "bad",
+                        feedback: {
+                            correct: "Right! CFOs want business value first, not features.",
+                            incorrect: "Actually, CFOs want ROI first, not feature demos."
+                        }
+                    },
+                    {
+                        type: "why",
+                        speaker: "learner",
+                        question: "Why is this problematic?",
+                        options: [
+                            { text: "CFOs want ROI data first", isCorrect: true },
+                            { text: "20 minutes is too long", isCorrect: false },
+                            { text: "Demos are boring", isCorrect: false }
+                        ],
+                        feedback: {
+                            correct: "Exactly! Lead with business value.",
+                            incorrect: "Think about what CFOs care about most."
+                        }
+                    },
+                    {
+                        type: "message",
+                        speaker: "colleague",
+                        text: "Good point! I'll lead with ROI instead."
+                    },
+                    {
+                        type: "message",
+                        speaker: "colleague",
+                        text: "Thanks for the help! Gotta run to the call. 🏃"
+                    }
+                ],
+                
+                outcome: {
+                    success: {
+                        message: "The call went great! Your advice really helped! 🎉",
+                        summary: [
+                            "✓ Led with business value",
+                            "✓ Focused on ROI",
+                            "✓ Kept it concise"
+                        ]
+                    },
+                    failure: {
+                        message: "The call didn't go well. I should have been better prepared. 😬",
+                        summary: [
+                            "✗ Started with features instead of value",
+                            "✗ Didn't lead with ROI",
+                            "✗ CFO seemed disengaged"
+                        ]
+                    }
+                }
+            },
+            settings: {
+                typingSpeed: 30,
+                typingDelay: 800,
+                successThreshold: 0.7 // 70% correct for good outcome
+            }
+        };
+    </script>
+    
+    <!-- ═══════════════════════════════════════════════════════════
+         STYLES SECTION
+    ══════════════════════════════════════════════════════════ -->
+    <style>
+        :root {
+            --slack-bg: #1a1d21;
+            --slack-sidebar: #3f0e40;
+            --slack-message-bg: #1a1d21;
+            --slack-hover: #1164a3;
+            --slack-white: #d1d2d3;
+            --slack-timestamp: #8b8d8f;
+            --colleague-bubble: #444649;
+            --learner-bubble: #1164a3;
+            --success-green: #2eb67d;
+            --error-red: #e01e5a;
+            --button-hover: #1a7dc6;
+            --good-emoji: #2eb67d;
+            --bad-emoji: #e01e5a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--slack-bg);
+            color: var(--slack-white);
+            line-height: 1.5;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--colleague-bubble);
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-avatar {
+            font-size: 32px;
+        }
+
+        .header-info h1 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .header-info p {
+            font-size: 13px;
+            color: var(--slack-timestamp);
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            font-size: 36px;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .message-name {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: var(--slack-timestamp);
+        }
+
+        .message-text {
+            font-size: 15px;
+            line-height: 1.6;
+            background: var(--colleague-bubble);
+            padding: 14px 18px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .message.learner .message-text {
+            background: var(--learner-bubble);
+            box-shadow: 0 1px 3px rgba(17, 100, 163, 0.3);
+        }
+
+        .message-reactions-static {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .static-reaction {
+            background: var(--slack-bg);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            opacity: 0.7;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 0;
+        }
+
+        .typing-dots {
+            background: var(--colleague-bubble);
+            padding: 12px 16px;
+            border-radius: 8px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--slack-timestamp);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .interaction-panel {
+            background: var(--colleague-bubble);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .interaction-question {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--slack-white);
+        }
+
+        .choice-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .choice-button {
+            background: var(--slack-bg);
+            color: var(--slack-white);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 16px 20px;
+            font-size: 15px;
+            text-align: left;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .choice-button:hover {
+            background: var(--slack-hover);
+            border-color: var(--slack-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(17, 100, 163, 0.3);
+        }
+
+        .choice-button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .message-reactions {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .reaction-prompt {
+            font-size: 13px;
+            color: var(--slack-white);
+            margin-left: 8px;
+            animation: glow 2s ease-in-out 3;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .slack-reaction-button {
+            background: var(--slack-bg);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            position: relative;
+        }
+
+        .slack-reaction-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .slack-reaction-button:active {
+            transform: scale(0.98);
+        }
+
+        .slack-reaction-button.wrong-choice {
+            pointer-events: none;
+        }
+
+        .slack-reaction-button.wrong-choice::after {
+            content: '✗';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            color: var(--error-red);
+            font-weight: bold;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .feedback-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+            padding: 20px;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .feedback-panel {
+            background: var(--colleague-bubble);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 100%;
+            animation: scaleIn 0.3s ease;
+            cursor: default;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .feedback-panel.correct-feedback {
+            border: 3px solid var(--success-green);
+        }
+
+        .feedback-panel.incorrect-feedback {
+            border: 3px solid var(--error-red);
+        }
+
+        .feedback-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .feedback-icon {
+            font-size: 32px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .feedback-icon.correct {
+            background: rgba(46, 182, 125, 0.2);
+            color: var(--success-green);
+        }
+
+        .feedback-icon.incorrect {
+            background: rgba(224, 30, 90, 0.2);
+            color: var(--error-red);
+        }
+
+        .feedback-label {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .feedback-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            color: var(--slack-white);
+        }
+
+        .feedback-panel .continue-button {
+            margin-top: 0;
+            width: 100%;
+        }
+
+        .continue-button {
+            background: var(--learner-bubble);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 16px;
+            font-family: inherit;
+        }
+
+        .continue-button:hover {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(17, 100, 163, 0.3);
+        }
+
+        .continue-button:active {
+            transform: translateY(0);
+        }
+
+        .interlude-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .interlude-time {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .interlude-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--slack-timestamp);
+            margin-bottom: 32px;
+        }
+
+        .summary-screen {
+            padding: 40px 24px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .summary-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .summary-emoji {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .summary-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .summary-message {
+            font-size: 16px;
+            color: var(--slack-timestamp);
+            line-height: 1.6;
+        }
+
+        .summary-list {
+            background: var(--colleague-bubble);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .summary-list-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .summary-item {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .restart-button {
+            background: var(--learner-bubble);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: block;
+            margin: 0 auto;
+            font-family: inherit;
+        }
+
+        .restart-button:hover {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(17, 100, 163, 0.3);
+        }
+
+        .restart-button:active {
+            transform: translateY(0);
+        }
+
+        /* Fade out animation for transition to interlude */
+        .fade-out {
+            animation: fadeOut 1s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* Fade in animation for interlude */
+        .fade-in {
+            animation: fadeIn 0.8s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════════════════════
+         APPLICATION LOGIC
+    ══════════════════════════════════════════════════════════ -->
+    <script>
+        // ============================================
+        // STATE
+        // ============================================
+        const STATE = {
+            currentStep: 0,
+            messages: [],
+            isTyping: false,
+            awaitingInteraction: false,
+            interactionType: null,
+            score: 0,
+            maxScore: 0,
+            currentInteraction: null,
+            showInterlude: false,
+            showSummary: false,
+            reactionFeedback: null,
+            reactionCorrect: false,
+            whyFeedback: null,
+            whyCorrect: false,
+            reactionHistory: [],
+            lastReactionClicked: null,
+            showOutcomeButton: false,
+            showInterludeButton: false,
+            fadingOut: false
+        };
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        function init() {
+            render();
+            processNextStep();
+        }
+
+        // ============================================
+        // CORE FLOW
+        // ============================================
+        function processNextStep() {
+            if (STATE.currentStep >= CONFIG.content.conversation.length) {
+                // Trigger fade sequence before showing interlude
+                setTimeout(() => {
+                    STATE.fadingOut = true;
+                    render();
+                    
+                    // After fade completes, show interlude
+                    setTimeout(() => {
+                        STATE.fadingOut = false;
+                        STATE.showInterlude = true;
+                        render();
+                    }, 1000); // Duration of fade-out animation
+                }, 3000); // Wait 3 seconds before starting fade
+                return;
+            }
+
+            const step = CONFIG.content.conversation[STATE.currentStep];
+
+            if (step.type === 'message') {
+                showTypingIndicator();
+                setTimeout(() => {
+                    addMessage(step.speaker, step.text);
+                    STATE.currentStep++;
+                    processNextStep();
+                }, CONFIG.settings.typingDelay + (step.text.length * CONFIG.settings.typingSpeed));
+            } else {
+                STATE.awaitingInteraction = true;
+                STATE.interactionType = step.type;
+                STATE.currentInteraction = step;
+                render();
+            }
+        }
+
+        function showTypingIndicator() {
+            STATE.isTyping = true;
+            render();
+        }
+
+        function addMessage(speaker, text) {
+            STATE.messages.push({ speaker, text, time: getCurrentTime() });
+            STATE.isTyping = false;
+            render();
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            setTimeout(() => {
+                const container = document.querySelector('.messages-container');
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            }, 100);
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+
+        // ============================================
+        // RENDERING
+        // ============================================
+        function render() {
+            const app = document.getElementById('app');
+            
+            if (STATE.showSummary) {
+                app.innerHTML = renderSummary();
+            } else if (STATE.showInterlude) {
+                app.innerHTML = renderInterlude();
+            } else {
+                app.innerHTML = renderChat();
+            }
+            
+            attachEventListeners();
+        }
+
+        function renderChat() {
+            return `
+                <div class="header ${STATE.fadingOut ? 'fade-out' : ''}">
+                    <div class="header-avatar">${CONFIG.content.colleague.avatar}</div>
+                    <div class="header-info">
+                        <h1>${CONFIG.content.colleague.name}</h1>
+                        <p>${CONFIG.content.subtitle}</p>
+                    </div>
+                </div>
+                
+                <div class="messages-container ${STATE.fadingOut ? 'fade-out' : ''}">
+                    ${STATE.messages.map(msg => renderMessage(msg)).join('')}
+                    ${STATE.isTyping ? renderTypingIndicator() : ''}
+                    ${STATE.awaitingInteraction ? renderInteraction() : ''}
+                    ${STATE.showInterludeButton ? renderInterludeButton() : ''}
+                    ${STATE.showOutcomeButton ? renderOutcomeButton() : ''}
+                </div>
+                
+                ${STATE.reactionFeedback || STATE.whyFeedback ? renderFeedbackPanel() : ''}
+            `;
+        }
+
+        function renderMessage(msg) {
+            const isColleague = msg.speaker === 'colleague';
+            const isLastMessage = STATE.messages[STATE.messages.length - 1] === msg;
+            const shouldShowReactions = isLastMessage && 
+                                       STATE.awaitingInteraction && 
+                                       STATE.interactionType === 'reaction';
+            const messageIndex = STATE.messages.indexOf(msg);
+            const hasStoredReaction = STATE.reactionHistory[messageIndex] !== undefined;
+            const showingFeedback = STATE.reactionFeedback !== null && isLastMessage;
+            
+            return `
+                <div class="message ${isColleague ? 'colleague' : 'learner'}">
+                    <div class="message-avatar">${isColleague ? CONFIG.content.colleague.avatar : '👨‍💼'}</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-name">${isColleague ? CONFIG.content.colleague.name : 'You'}</span>
+                            <span class="message-time">${msg.time}</span>
+                        </div>
+                        <div class="message-text">${msg.text}</div>
+                        ${shouldShowReactions ? `
+                            <div class="message-reactions">
+                                <button class="slack-reaction-button ${showingFeedback && !STATE.reactionCorrect && STATE.lastReactionClicked === 'good' ? 'wrong-choice' : ''}" data-reaction="good">👍</button>
+                                <button class="slack-reaction-button ${showingFeedback && !STATE.reactionCorrect && STATE.lastReactionClicked === 'bad' ? 'wrong-choice' : ''}" data-reaction="bad">👎</button>
+                                <span class="reaction-prompt">← ${STATE.currentInteraction.question}</span>
+                            </div>
+                        ` : hasStoredReaction ? `
+                            <div class="message-reactions-static">
+                                <div class="static-reaction">${STATE.reactionHistory[messageIndex] === 'good' ? '👍' : '👎'}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTypingIndicator() {
+            return `
+                <div class="typing-indicator">
+                    <div class="message-avatar">${CONFIG.content.colleague.avatar}</div>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderInteraction() {
+            const interaction = STATE.currentInteraction;
+            
+            if (interaction.type === 'choice') {
+                return `
+                    <div class="message learner">
+                        <div class="message-avatar">👨‍💼</div>
+                        <div class="message-content">
+                            <div class="interaction-panel">
+                                <div class="interaction-question">Choose your response:</div>
+                                <div class="choice-buttons">
+                                    ${interaction.options.map((opt, i) => `
+                                        <button class="choice-button" data-index="${i}">
+                                            ${opt.text}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (interaction.type === 'reaction') {
+                return '';
+            } else if (interaction.type === 'why') {
+                return `
+                    <div class="message learner">
+                        <div class="message-avatar">👨‍💼</div>
+                        <div class="message-content">
+                            <div class="interaction-panel">
+                                <div class="interaction-question">${interaction.question}</div>
+                                <div class="choice-buttons">
+                                    ${interaction.options.map((opt, i) => `
+                                        <button class="choice-button" data-index="${i}">
+                                            ${opt.text}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderFeedbackPanel() {
+            const isReaction = STATE.reactionFeedback !== null;
+            const isCorrect = isReaction ? STATE.reactionCorrect : STATE.whyCorrect;
+            const feedbackText = isReaction ? STATE.reactionFeedback : STATE.whyFeedback;
+            
+            return `
+                <div class="feedback-overlay" id="feedbackOverlay">
+                    <div class="feedback-panel ${isCorrect ? 'correct-feedback' : 'incorrect-feedback'}">
+                        <div class="feedback-panel-header">
+                            <div class="feedback-icon ${isCorrect ? 'correct' : 'incorrect'}">${isCorrect ? '✓' : '✗'}</div>
+                            <div class="feedback-label">${isCorrect ? 'Correct' : 'Not Quite'}</div>
+                        </div>
+                        <div class="feedback-text">${feedbackText}</div>
+                        <button class="continue-button" id="continueBtn">Continue</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderOutcomeButton() {
+            return `
+                <div class="message learner">
+                    <div class="message-avatar">👨‍💼</div>
+                    <div class="message-content">
+                        <div class="interaction-panel">
+                            <button class="continue-button" id="showTakeawaysBtn" style="width: 100%;">See Takeaways</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderInterlude() {
+            return `
+                <div class="header fade-in">
+                    <div class="header-avatar">${CONFIG.content.colleague.avatar}</div>
+                    <div class="header-info">
+                        <h1>${CONFIG.content.colleague.name}</h1>
+                    </div>
+                </div>
+                <div class="messages-container fade-in">
+                    <div class="interlude-screen">
+                        <div class="interlude-time">⏰</div>
+                        <div class="interlude-text">Thirty minutes later...</div>
+                        <button class="continue-button" id="interludeContinue">Continue</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderSummary() {
+            const isSuccess = STATE.score >= STATE.maxScore * CONFIG.settings.successThreshold;
+            const outcome = isSuccess ? CONFIG.content.outcome.success : CONFIG.content.outcome.failure;
+            
+            return `
+                <div class="header">
+                    <div class="header-avatar">${CONFIG.content.colleague.avatar}</div>
+                    <div class="header-info">
+                        <h1>${CONFIG.content.colleague.name}</h1>
+                    </div>
+                </div>
+                <div class="messages-container">
+                    <div class="summary-screen">
+                        <div class="summary-header">
+                            <div class="summary-emoji">${isSuccess ? '🎉' : '📚'}</div>
+                            <h2 class="summary-title">${isSuccess ? 'Great Coaching!' : 'Learning Opportunity'}</h2>
+                            <p class="summary-message">${outcome.message}</p>
+                        </div>
+                        
+                        <div class="summary-list">
+                            <h3 class="summary-list-title">Key Takeaways:</h3>
+                            ${outcome.summary.map(item => `
+                                <div class="summary-item">${item}</div>
+                            `).join('')}
+                        </div>
+                        
+                        <button class="restart-button" id="restartBtn">Practice Again</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // EVENT HANDLERS
+        // ============================================
+        function attachEventListeners() {
+            document.querySelectorAll('.choice-button').forEach(btn => {
+                if (STATE.currentInteraction && STATE.currentInteraction.type === 'why') {
+                    btn.addEventListener('click', handleWhyClick);
+                } else if (STATE.currentInteraction && STATE.currentInteraction.type === 'choice') {
+                    btn.addEventListener('click', handleChoiceClick);
+                }
+            });
+            
+            document.querySelectorAll('.slack-reaction-button').forEach(btn => {
+                btn.addEventListener('click', handleReactionClick);
+            });
+            
+            const continueBtn = document.getElementById('continueBtn');
+            if (continueBtn) {
+                continueBtn.addEventListener('click', handleContinue);
+            }
+            
+            const showTakeawaysBtn = document.getElementById('showTakeawaysBtn');
+            if (showTakeawaysBtn) {
+                showTakeawaysBtn.addEventListener('click', handleShowTakeaways);
+            }
+            
+            const feedbackOverlay = document.getElementById('feedbackOverlay');
+            if (feedbackOverlay) {
+                feedbackOverlay.addEventListener('click', (e) => {
+                    if (e.target === feedbackOverlay) {
+                        handleContinue();
+                    }
+                });
+            }
+            
+            const interludeContinue = document.getElementById('interludeContinue');
+            if (interludeContinue) interludeContinue.addEventListener('click', handleInterludeContinue);
+            
+            const restartBtn = document.getElementById('restartBtn');
+            if (restartBtn) restartBtn.addEventListener('click', handleRestart);
+        }
+
+        function handleChoiceClick(event) {
+            const index = parseInt(event.target.dataset.index);
+            const interaction = STATE.currentInteraction;
+            const choice = interaction.options[index];
+            
+            addMessage('learner', choice.text);
+            
+            STATE.awaitingInteraction = false;
+            STATE.currentStep++;
+            
+            processNextStep();
+        }
+
+        function handleReactionClick(event) {
+            const reaction = event.target.dataset.reaction;
+            const interaction = STATE.currentInteraction;
+            const isCorrect = reaction === interaction.correctAnswer;
+            
+            STATE.lastReactionClicked = reaction;
+            
+            const lastMessageIndex = STATE.messages.length - 1;
+            STATE.reactionHistory[lastMessageIndex] = reaction;
+            
+            STATE.reactionCorrect = isCorrect;
+            STATE.reactionFeedback = isCorrect ? interaction.feedback.correct : interaction.feedback.incorrect;
+            
+            if (isCorrect) STATE.score++;
+            STATE.maxScore++;
+            
+            render();
+        }
+
+        function handleWhyClick(event) {
+            const index = parseInt(event.target.dataset.index);
+            const interaction = STATE.currentInteraction;
+            const choice = interaction.options[index];
+            const isCorrect = choice.isCorrect;
+            
+            STATE.whyCorrect = isCorrect;
+            STATE.whyFeedback = isCorrect ? interaction.feedback.correct : interaction.feedback.incorrect;
+            
+            if (isCorrect) STATE.score++;
+            STATE.maxScore++;
+            
+            render();
+        }
+function handleContinue() {
+    const interaction = STATE.currentInteraction;
+
+    if (interaction.type === 'reaction') {
+        const wasCorrect = STATE.reactionCorrect;
+        STATE.reactionFeedback = null;
+        STATE.lastReactionClicked = null;
+        STATE.awaitingInteraction = false;
+
+        // Advance to next step(s) depending on correctness
+        if (wasCorrect) {
+            // Learner was correct → continue normally
+            STATE.currentStep++;
+        } else {
+            // Learner was incorrect → skip "why" and any follow-up correction messages
+            STATE.currentStep++;
+
+            // Skip any 'why' or 'message' steps that represent the correction
+            while (STATE.currentStep < CONFIG.content.conversation.length) {
+                const nextStep = CONFIG.content.conversation[STATE.currentStep];
+                if (nextStep.type === 'why' || 
+                   (nextStep.type === 'message' && nextStep.text.includes("Good point!"))) {
+                    STATE.currentStep++;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        processNextStep();
+
+    } else if (interaction.type === 'why') {
+        STATE.whyFeedback = null;
+        STATE.currentStep++;
+        STATE.awaitingInteraction = false;
+        processNextStep();
+    }
+}
+
+
+        function handleShowTakeaways() {
+            STATE.showSummary = true;
+            render();
+        }
+
+        function handleInterludeContinue() {
+            STATE.showInterlude = false;
+            
+            showTypingIndicator();
+            
+            const isSuccess = STATE.score >= STATE.maxScore * 0.7;
+            const outcome = isSuccess ? CONFIG.content.outcome.success : CONFIG.content.outcome.failure;
+            
+            setTimeout(() => {
+                addMessage('colleague', outcome.message);
+                
+                setTimeout(() => {
+                    STATE.showOutcomeButton = true;
+                    render();
+                }, 800);
+            }, CONFIG.settings.typingDelay + 800);
+        }
+
+        function handleRestart() {
+            STATE.currentStep = 0;
+            STATE.messages = [];
+            STATE.isTyping = false;
+            STATE.awaitingInteraction = false;
+            STATE.interactionType = null;
+            STATE.score = 0;
+            STATE.maxScore = 0;
+            STATE.currentInteraction = null;
+            STATE.showInterlude = false;
+            STATE.showSummary = false;
+            STATE.reactionFeedback = null;
+            STATE.reactionCorrect = false;
+            STATE.whyFeedback = null;
+            STATE.whyCorrect = false;
+            STATE.reactionHistory = [];
+            STATE.lastReactionClicked = null;
+            STATE.showOutcomeButton = false;
+            STATE.fadingOut = false;
+            
+            render();
+            processNextStep();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+    <div id="app" role="main"></div>
+</body>
+</html>
