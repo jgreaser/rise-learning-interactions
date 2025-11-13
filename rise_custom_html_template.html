@@ -9,7 +9,7 @@
          CONFIGURATION SECTION - EDIT THIS SECTION TO UPDATE CONTENT
          ⚠️ LLM INSTRUCTION: When generating interactions, place ALL
          content data in this CONFIG object. Never hardcode content
-         strings in the logic section.
+         strings in the logic section. 
          
          Structure:
          - content: All learner-facing text and media
@@ -19,7 +19,7 @@
          
          ⚠️ INSTRUCTIONAL DESIGNERS: This is the only section you need
          to edit to change quiz questions, feedback messages, or 
-         interaction settings. Everything below this handles the logic.
+         interaction settings. Everything below this handles the logic. 
     ══════════════════════════════════════════════════════════ -->
     <script>
         const CONFIG = {
@@ -83,6 +83,8 @@
                 // EVENT DEFINITIONS
                 // Define which events to track in your interaction
                 // The EventTracker will automatically fire these when triggered
+                // If you have many of these interactions, for consistency you may 
+                // want to provide more specific events to track
                 // ─────────────────────────────────────────────────────────
                 track: {
                     // Lifecycle events
@@ -106,6 +108,9 @@
                     },
                     
                     // Milestone events (major progress points)
+                    // You may need to provide specific events
+                    // so that you can compare analytics across 
+                    // your various interactions
                     milestones: {
                         // Define your custom milestones here
                         // Examples:
@@ -191,6 +196,8 @@
                 // ─────────────────────────────────────────────────────────
                 options: {
                     // Log events to console for debugging
+                    // Or just leave it on for the Dev console users
+                    // to find, they love a little inside baseball
                     debug: true,
                     
                     // Batch events before sending (reduces network calls)
@@ -223,6 +230,10 @@
          Define all visual presentation here using CSS
          No inline styles in the LOGIC section
          Use CSS custom properties for themeable values
+
+        ⚠️ LLM INSTRUCTION: If no design direction is provided, ask
+        the user if they have style guides available. Then proceed once
+        you have some direction. 
     ══════════════════════════════════════════════════════════ -->
     <style>
         :root {
@@ -260,6 +271,12 @@
     <!-- ═══════════════════════════════════════════════════════════
          APPLICATION LOGIC
          ⚠️ LLM INSTRUCTION: All code must follow the pattern below.
+         ⚠️ LLM INSTRUCTION: If you are being asked to troubleshoot
+            this temlpate, take on the role of web browser/javascript 
+            interpreter, and trace the flow of activity from initial
+            page load to the various user options available (button clicks, etc.)
+            Be meticilous in your trouble-shooting, and use javascript
+            patterns to solve the issues you find. 
          
          ARCHITECTURAL PATTERNS USED IN THIS TEMPLATE:
          ────────────────────────────────────────────────────────────
