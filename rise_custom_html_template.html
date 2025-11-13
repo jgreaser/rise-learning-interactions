@@ -15,6 +15,7 @@
          - content: All learner-facing text and media
          - settings: Interaction behavior configuration
          - feedback: Response messages for learner actions
+         - events: Declarative event tracking configuration
          
          ⚠️ INSTRUCTIONAL DESIGNERS: This is the only section you need
          to edit to change quiz questions, feedback messages, or 
@@ -37,6 +38,182 @@
                 correct: "Correct!",
                 incorrect: "Try again.",
                 // Add your feedback messages here
+            },
+            
+            // ═══════════════════════════════════════════════════════════
+            // EVENTS CONFIGURATION
+            // Define what events to track and where to send them
+            // ═══════════════════════════════════════════════════════════
+            events: {
+                // Master switch - set to false to disable all tracking
+                enabled: true,
+                
+                // ─────────────────────────────────────────────────────────
+                // ANALYTICS CONFIGURATION
+                // ─────────────────────────────────────────────────────────
+                analytics: {
+                    enabled: true,
+                    provider: 'ga4', // 'ga4', 'gtm', 'none'
+                    trackingId: '', // e.g., 'G-XXXXXXXXXX' for GA4
+                    // Custom dimension mappings (optional)
+                    customDimensions: {
+                        // score: 'dimension1',
+                        // outcome: 'dimension2'
+                    }
+                },
+                
+                // ─────────────────────────────────────────────────────────
+                // LMS CONFIGURATION
+                // ─────────────────────────────────────────────────────────
+                lms: {
+                    enabled: true,
+                    type: 'rise', // 'rise', 'scorm', 'xapi', 'custom', 'none'
+                    completionThreshold: 0.7, // 0-1 (percentage of maxScore)
+                    
+                    // Custom LMS integration function (optional)
+                    // Called when completion event fires
+                    customHandler: null
+                    // Example:
+                    // customHandler: function(isComplete, data) {
+                    //     console.log('Custom LMS handler', isComplete, data);
+                    // }
+                },
+                
+                // ─────────────────────────────────────────────────────────
+                // EVENT DEFINITIONS
+                // Define which events to track in your interaction
+                // The EventTracker will automatically fire these when triggered
+                // ─────────────────────────────────────────────────────────
+                track: {
+                    // Lifecycle events
+                    lifecycle: {
+                        started: {
+                            enabled: true,
+                            name: 'interaction_started',
+                            data: {} // Additional data to include
+                        },
+                        completed: {
+                            enabled: true,
+                            name: 'interaction_completed',
+                            includeScore: true,
+                            includeTime: true
+                        },
+                        restarted: {
+                            enabled: true,
+                            name: 'interaction_restarted',
+                            data: {}
+                        }
+                    },
+                    
+                    // Milestone events (major progress points)
+                    milestones: {
+                        // Define your custom milestones here
+                        // Examples:
+                        // halfwayPoint: {
+                        //     enabled: true,
+                        //     name: 'reached_halfway',
+                        //     trigger: 'manual' // 'manual' or 'auto'
+                        // },
+                        // allQuestionsAnswered: {
+                        //     enabled: true,
+                        //     name: 'all_questions_answered'
+                        // }
+                    },
+                    
+                    // User interaction events
+                    interactions: {
+                        // Examples of common interaction types:
+                        // buttonClick: {
+                        //     enabled: true,
+                        //     name: 'button_clicked',
+                        //     captureTarget: true, // Include which button
+                        //     captureValue: false
+                        // },
+                        // questionAnswered: {
+                        //     enabled: true,
+                        //     name: 'question_answered',
+                        //     captureCorrectness: true,
+                        //     captureAttempts: true
+                        // },
+                        // choiceSelected: {
+                        //     enabled: true,
+                        //     name: 'choice_selected',
+                        //     captureValue: true
+                        // }
+                    },
+                    
+                    // Score/performance events
+                    performance: {
+                        scoreChanged: {
+                            enabled: true,
+                            name: 'score_updated',
+                            captureNewScore: true,
+                            captureMaxScore: true
+                        },
+                        perfectScore: {
+                            enabled: true,
+                            name: 'perfect_score_achieved',
+                            trigger: 'auto' // Fires automatically when score === maxScore
+                        }
+                    },
+                    
+                    // Feedback events
+                    feedback: {
+                        viewed: {
+                            enabled: true,
+                            name: 'feedback_shown',
+                            captureType: true, // 'correct', 'incorrect', 'partial'
+                            captureDuration: false
+                        },
+                        dismissed: {
+                            enabled: true,
+                            name: 'feedback_dismissed'
+                        }
+                    },
+                    
+                    // Navigation events
+                    navigation: {
+                        // stepChanged: {
+                        //     enabled: true,
+                        //     name: 'step_changed',
+                        //     captureFrom: true,
+                        //     captureTo: true
+                        // },
+                        // backButton: {
+                        //     enabled: true,
+                        //     name: 'navigated_back'
+                        // }
+                    }
+                },
+                
+                // ─────────────────────────────────────────────────────────
+                // ADVANCED OPTIONS
+                // ─────────────────────────────────────────────────────────
+                options: {
+                    // Log events to console for debugging
+                    debug: true,
+                    
+                    // Batch events before sending (reduces network calls)
+                    batching: {
+                        enabled: false,
+                        maxSize: 10,
+                        maxWait: 5000 // milliseconds
+                    },
+                    
+                    // Include additional context with every event
+                    globalData: {
+                        // interactionType: 'quiz',
+                        // module: 'module-1'
+                    },
+                    
+                    // Custom event handlers - run on every event
+                    customHandlers: [
+                        // Example:
+                        // function(eventName, eventData) {
+                        //     console.log('Custom handler:', eventName, eventData);
+                        // }
+                    ]
+                }
             }
         };
     </script>
@@ -97,6 +274,11 @@
          - Keep functions small and single-purpose
          - Use descriptive function names (verbs for actions)
          - Add comments explaining "why" not "what"
+         
+         EVENTS INTEGRATION:
+         - Call EventTracker.fire() when significant actions occur
+         - Use dot notation: EventTracker.fire('interactions.buttonClick')
+         - Pass relevant data: EventTracker.fire('lifecycle.completed', { score: STATE.score })
     ══════════════════════════════════════════════════════════ -->
     <script>
         // ============================================
@@ -105,6 +287,8 @@
         const STATE = {
             // Initialize state properties here
             currentStep: 0,
+            score: 0,
+            maxScore: 0,
             isComplete: false
             // Add your state properties
         };
@@ -113,10 +297,14 @@
         // INITIALIZATION
         // ============================================
         function init() {
+            // Initialize event tracking FIRST
+            EventTracker.init();
+            
             // Setup code goes here
             // - Shuffle content if needed
             // - Set up initial state
             // - Load saved progress if applicable
+            
             render();
         }
 
@@ -132,6 +320,9 @@
                     <h1>${CONFIG.content.title}</h1>
                     <p>${CONFIG.content.instructions}</p>
                     <!-- Add your dynamic HTML here -->
+                    
+                    <!-- Example button that fires an event -->
+                    <button id="exampleBtn">Click Me</button>
                 </div>
             `;
             
@@ -143,23 +334,42 @@
 
         // ============================================
         // EVENT HANDLERS
-        // Pattern: handler → update STATE → call render()
+        // Pattern: handler → update STATE → fire event → call render()
         // ============================================
         function attachEventListeners() {
             // Attach event listeners to dynamic elements
-            // Example:
-            // const button = document.getElementById('myButton');
-            // if (button) button.addEventListener('click', handleClick);
+            const exampleBtn = document.getElementById('exampleBtn');
+            if (exampleBtn) {
+                exampleBtn.addEventListener('click', handleExampleClick);
+            }
         }
 
-        function handleClick(event) {
+        function handleExampleClick(event) {
             // 1. Get relevant data from event
             // 2. Update STATE based on action
-            // 3. Re-render to show changes
+            STATE.currentStep++;
             
-            // Example:
-            // STATE.currentStep++;
-            // render();
+            // 3. Fire tracking event (if configured)
+            // EventTracker.fire('interactions.buttonClick', {
+            //     buttonId: event.target.id,
+            //     step: STATE.currentStep
+            // });
+            
+            // 4. Re-render to show changes
+            render();
+        }
+
+        // Example: Completing the interaction
+        function handleComplete() {
+            STATE.isComplete = true;
+            
+            // Fire completion event
+            EventTracker.fire('lifecycle.completed', {
+                score: STATE.score,
+                maxScore: STATE.maxScore
+            });
+            
+            render();
         }
 
         // ============================================
@@ -194,5 +404,424 @@
          Minimal structure - most HTML generated by render()
     ══════════════════════════════════════════════════════════ -->
     <div id="app"></div>
+    
+    <!-- ═══════════════════════════════════════════════════════════
+         EVENT TRACKING SYSTEM
+         Automatically handles all event tracking based on CONFIG.events
+         This is placed at the bottom to keep the main logic readable.
+         The EventTracker object is hoisted and available throughout.
+    ══════════════════════════════════════════════════════════ -->
+    <script>
+        // ============================================
+        // EVENT TRACKER - Declarative Event System
+        // ============================================
+        const EventTracker = {
+            sessionId: null,
+            startTime: null,
+            eventQueue: [],
+            eventLog: [],
+            batchTimeout: null,
+            
+            /**
+             * Initialize the event tracking system
+             */
+            init() {
+                if (!CONFIG.events?.enabled) {
+                    console.log('[EventTracker] Tracking disabled');
+                    return;
+                }
+                
+                this.sessionId = this.generateSessionId();
+                this.startTime = Date.now();
+                
+                // Initialize analytics provider
+                if (CONFIG.events.analytics?.enabled) {
+                    this.initAnalytics();
+                }
+                
+                // Fire started event if configured
+                if (CONFIG.events.track?.lifecycle?.started?.enabled) {
+                    this.fire('lifecycle.started');
+                }
+                
+                // Setup beforeunload to capture exit
+                window.addEventListener('beforeunload', () => {
+                    this.fire('lifecycle.exited', {
+                        duration: Date.now() - this.startTime
+                    });
+                    this.flush(); // Send any pending events
+                });
+                
+                if (CONFIG.events.options?.debug) {
+                    console.log('[EventTracker] Initialized', {
+                        sessionId: this.sessionId,
+                        config: CONFIG.events
+                    });
+                }
+            },
+            
+            /**
+             * Generate unique session ID
+             */
+            generateSessionId() {
+                return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            },
+            
+            /**
+             * Initialize analytics provider (Google Analytics, etc.)
+             */
+            initAnalytics() {
+                const analytics = CONFIG.events.analytics;
+                
+                // Privacy notice
+                console.log('[EventTracker] Analytics enabled - PII is not collected');
+                
+                if (analytics.provider === 'ga4' && analytics.trackingId) {
+                    // Load Google Analytics
+                    const script = document.createElement('script');
+                    script.async = true;
+                    script.src = `https://www.googletagmanager.com/gtag/js?id=${analytics.trackingId}`;
+                    document.head.appendChild(script);
+                    
+                    window.dataLayer = window.dataLayer || [];
+                    window.gtag = function() { dataLayer.push(arguments); };
+                    gtag('js', new Date());
+                    gtag('config', analytics.trackingId);
+                    
+                    if (CONFIG.events.options?.debug) {
+                        console.log('[EventTracker] GA4 initialized:', analytics.trackingId);
+                    }
+                } else if (analytics.provider === 'gtm' && analytics.trackingId) {
+                    // Google Tag Manager
+                    window.dataLayer = window.dataLayer || [];
+                    window.dataLayer.push({
+                        'gtm.start': new Date().getTime(),
+                        event: 'gtm.js'
+                    });
+                    
+                    const script = document.createElement('script');
+                    script.async = true;
+                    script.src = `https://www.googletagmanager.com/gtm.js?id=${analytics.trackingId}`;
+                    document.head.appendChild(script);
+                }
+            },
+            
+            /**
+             * Fire an event based on its path in the config
+             * @param {string} eventPath - Dot-notation path (e.g., 'lifecycle.started', 'interactions.buttonClick')
+             * @param {object} additionalData - Extra data to include with the event
+             */
+            fire(eventPath, additionalData = {}) {
+                if (!CONFIG.events?.enabled) return;
+                
+                // Navigate to the event definition in config
+                const eventDef = this.getEventDefinition(eventPath);
+                
+                if (!eventDef || !eventDef.enabled) {
+                    if (CONFIG.events.options?.debug) {
+                        console.log(`[EventTracker] Event not enabled: ${eventPath}`);
+                    }
+                    return;
+                }
+                
+                // Build event data
+                const eventData = this.buildEventData(eventDef, additionalData);
+                const eventName = eventDef.name || eventPath.replace(/\./g, '_');
+                
+                // Log the event
+                this.logEvent(eventName, eventData);
+                
+                // Send to destinations
+                this.send(eventName, eventData);
+                
+                // Check for auto-triggered events
+                this.checkAutoTriggers(eventName, eventData);
+            },
+            
+            /**
+             * Get event definition from config by path
+             */
+            getEventDefinition(path) {
+                const parts = path.split('.');
+                let current = CONFIG.events.track;
+                
+                for (const part of parts) {
+                    if (!current || !current[part]) return null;
+                    current = current[part];
+                }
+                
+                return current;
+            },
+            
+            /**
+             * Build event data object with all configured fields
+             */
+            buildEventData(eventDef, additionalData) {
+                const data = {
+                    sessionId: this.sessionId,
+                    timestamp: Date.now(),
+                    timeElapsed: Date.now() - this.startTime,
+                    ...CONFIG.events.options?.globalData,
+                    ...eventDef.data,
+                    ...additionalData
+                };
+                
+                // Add score if configured
+                if (eventDef.includeScore && typeof STATE.score !== 'undefined') {
+                    data.score = STATE.score;
+                    data.maxScore = STATE.maxScore || 0;
+                }
+                
+                // Add time if configured
+                if (eventDef.includeTime) {
+                    data.duration = Date.now() - this.startTime;
+                }
+                
+                return data;
+            },
+            
+            /**
+             * Log event to internal array
+             */
+            logEvent(eventName, eventData) {
+                this.eventLog.push({
+                    name: eventName,
+                    data: eventData,
+                    timestamp: Date.now()
+                });
+                
+                if (CONFIG.events.options?.debug) {
+                    console.log(`[EventTracker] 📊 ${eventName}`, eventData);
+                }
+            },
+            
+            /**
+             * Send event to configured destinations
+             */
+            send(eventName, eventData) {
+                // Batching logic
+                if (CONFIG.events.options?.batching?.enabled) {
+                    this.eventQueue.push({ eventName, eventData });
+                    
+                    if (this.eventQueue.length >= CONFIG.events.options.batching.maxSize) {
+                        this.flush();
+                    } else {
+                        this.scheduleBatchFlush();
+                    }
+                    return;
+                }
+                
+                // Send immediately
+                this.sendToAnalytics(eventName, eventData);
+                this.sendToLMS(eventName, eventData);
+                this.sendToCustomHandlers(eventName, eventData);
+            },
+            
+            /**
+             * Schedule batch flush
+             */
+            scheduleBatchFlush() {
+                if (this.batchTimeout) return;
+                
+                this.batchTimeout = setTimeout(() => {
+                    this.flush();
+                }, CONFIG.events.options.batching.maxWait);
+            },
+            
+            /**
+             * Flush event queue
+             */
+            flush() {
+                if (this.eventQueue.length === 0) return;
+                
+                const events = [...this.eventQueue];
+                this.eventQueue = [];
+                
+                events.forEach(({ eventName, eventData }) => {
+                    this.sendToAnalytics(eventName, eventData);
+                    this.sendToLMS(eventName, eventData);
+                    this.sendToCustomHandlers(eventName, eventData);
+                });
+                
+                if (this.batchTimeout) {
+                    clearTimeout(this.batchTimeout);
+                    this.batchTimeout = null;
+                }
+            },
+            
+            /**
+             * Send to analytics provider
+             */
+            sendToAnalytics(eventName, eventData) {
+                if (!CONFIG.events.analytics?.enabled) return;
+                
+                const provider = CONFIG.events.analytics.provider;
+                
+                try {
+                    if (provider === 'ga4' && window.gtag) {
+                        window.gtag('event', eventName, eventData);
+                    } else if (provider === 'gtm' && window.dataLayer) {
+                        window.dataLayer.push({
+                            event: eventName,
+                            ...eventData
+                        });
+                    }
+                } catch (e) {
+                    // Silently fail - don't let analytics errors crash the interaction
+                    if (CONFIG.events.options?.debug) {
+                        console.error('[EventTracker] Analytics error (non-critical):', e);
+                    }
+                }
+            },
+            
+            /**
+             * Send to LMS
+             */
+            sendToLMS(eventName, eventData) {
+                if (!CONFIG.events.lms?.enabled) return;
+                
+                // Only send completion events to LMS
+                if (eventName !== 'interaction_completed') return;
+                
+                const lmsType = CONFIG.events.lms.type;
+                const threshold = CONFIG.events.lms.completionThreshold;
+                const isComplete = eventData.score >= (eventData.maxScore * threshold);
+                
+                if (lmsType === 'rise') {
+                    try {
+                        if (isComplete) {
+                            window.parent.postMessage({ type: 'complete' }, '*');
+                            if (CONFIG.events.options?.debug) {
+                                console.log('[EventTracker] 📤 Sent completion to Rise');
+                            }
+                        }
+                    } catch (e) {
+                        console.error('[EventTracker] Error sending to Rise:', e);
+                    }
+                } else if (lmsType === 'scorm') {
+                    this.sendToSCORM(isComplete, eventData);
+                } else if (lmsType === 'xapi') {
+                    this.sendToXAPI(isComplete, eventData);
+                } else if (lmsType === 'custom' && CONFIG.events.lms.customHandler) {
+                    CONFIG.events.lms.customHandler(isComplete, eventData);
+                }
+            },
+            
+            /**
+             * SCORM integration
+             */
+            sendToSCORM(isComplete, eventData) {
+                const API = window.API || window.API_1484_11;
+                if (!API) return;
+                
+                try {
+                    API.LMSSetValue('cmi.core.lesson_status', isComplete ? 'completed' : 'incomplete');
+                    if (eventData.score !== undefined) {
+                        const percentage = Math.round((eventData.score / eventData.maxScore) * 100);
+                        API.LMSSetValue('cmi.core.score.raw', percentage);
+                    }
+                    API.LMSCommit('');
+                    
+                    if (CONFIG.events.options?.debug) {
+                        console.log('[EventTracker] 📤 SCORM data committed');
+                    }
+                } catch (e) {
+                    console.error('[EventTracker] Error with SCORM:', e);
+                }
+            },
+            
+            /**
+             * xAPI integration
+             */
+            sendToXAPI(isComplete, eventData) {
+                if (!window.ADL?.XAPIWrapper) return;
+                
+                const statement = {
+                    actor: {
+                        mbox: "mailto:learner@example.com",
+                        objectType: "Agent"
+                    },
+                    verb: {
+                        id: isComplete ? 
+                            "http://adlnet.gov/expapi/verbs/completed" : 
+                            "http://adlnet.gov/expapi/verbs/attempted",
+                        display: { "en-US": isComplete ? "completed" : "attempted" }
+                    },
+                    object: {
+                        id: window.location.href,
+                        objectType: "Activity"
+                    },
+                    result: {
+                        score: {
+                            scaled: eventData.score / eventData.maxScore,
+                            raw: eventData.score,
+                            max: eventData.maxScore
+                        },
+                        success: isComplete,
+                        completion: isComplete
+                    }
+                };
+                
+                try {
+                    window.ADL.XAPIWrapper.sendStatement(statement);
+                    if (CONFIG.events.options?.debug) {
+                        console.log('[EventTracker] 📤 xAPI statement sent');
+                    }
+                } catch (e) {
+                    console.error('[EventTracker] Error with xAPI:', e);
+                }
+            },
+            
+            /**
+             * Send to custom handlers
+             */
+            sendToCustomHandlers(eventName, eventData) {
+                const handlers = CONFIG.events.options?.customHandlers || [];
+                
+                handlers.forEach(handler => {
+                    try {
+                        handler(eventName, eventData);
+                    } catch (e) {
+                        console.error('[EventTracker] Error in custom handler:', e);
+                    }
+                });
+            },
+            
+            /**
+             * Check for auto-triggered events (like perfect score)
+             */
+            checkAutoTriggers(eventName, eventData) {
+                // Check for perfect score
+                const perfectScoreDef = CONFIG.events.track?.performance?.perfectScore;
+                if (perfectScoreDef?.enabled && 
+                    perfectScoreDef.trigger === 'auto' &&
+                    eventData.score === eventData.maxScore &&
+                    eventData.maxScore > 0) {
+                    
+                    this.fire('performance.perfectScore', eventData);
+                }
+            },
+            
+            /**
+             * Get all logged events
+             */
+            getEventLog() {
+                return this.eventLog;
+            },
+            
+            /**
+             * Get session summary
+             */
+            getSessionSummary() {
+                return {
+                    sessionId: this.sessionId,
+                    startTime: this.startTime,
+                    duration: Date.now() - this.startTime,
+                    eventCount: this.eventLog.length,
+                    events: this.eventLog
+                };
+            }
+        };
+    </script>
 </body>
 </html>
