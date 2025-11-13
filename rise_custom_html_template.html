@@ -261,6 +261,35 @@
          APPLICATION LOGIC
          ⚠️ LLM INSTRUCTION: All code must follow the pattern below.
          
+         ARCHITECTURAL PATTERNS USED IN THIS TEMPLATE:
+         ────────────────────────────────────────────────────────────
+         1. "Unidirectional Data Flow" (Flux/Redux Pattern)
+            - STATE is single source of truth
+            - Data flows: User Action → Handler → Update STATE → render()
+            - Never modify DOM directly, always update STATE then render()
+         
+         2. "Single Responsibility Principle"
+            - Each function does ONE thing
+            - render() only renders, handlers only handle events
+            - Keep functions small (<30 lines ideal)
+         
+         3. "Declarative Rendering" (Virtual DOM Pattern)
+            - Build entire UI from STATE each time
+            - Use template literals for HTML generation
+            - Don't try to update individual DOM elements
+         
+         4. "Event Delegation" (Attach listeners after render)
+            - Listeners attached in attachEventListeners()
+            - Called after every render() to rebind to new DOM
+            - Use IDs and data attributes to identify elements
+         
+         5. "Separation of Concerns"
+            - CONFIG: What (content and settings)
+            - STATE: Current state of the interaction
+            - render(): How to display STATE
+            - Handlers: How STATE changes
+            - Helpers: Reusable pure functions
+         
          Required Structure:
          1. STATE object - single source of truth
          2. init() - setup and initial render
@@ -279,22 +308,62 @@
          - Call EventTracker.fire() when significant actions occur
          - Use dot notation: EventTracker.fire('interactions.buttonClick')
          - Pass relevant data: EventTracker.fire('lifecycle.completed', { score: STATE.score })
+         - Follow event patterns documented below to avoid infinite loops
     ══════════════════════════════════════════════════════════ -->
     <script>
         // ============================================
         // STATE - Single source of truth
+        // PATTERN: "Single Source of Truth" (SSOT Pattern)
+        // ────────────────────────────────────────────
+        // All application state lives here. Never store state in:
+        // - DOM elements (data attributes, classes for state)
+        // - Global variables outside STATE
+        // - Component-level variables
+        // 
+        // Benefits:
+        // - Predictable state updates
+        // - Easy to debug (inspect STATE object)
+        // - Time-travel debugging possible
+        // - Easy to save/restore state
+        // 
+        // PATTERN: "Immutable Updates" (preferred)
+        // ────────────────────────────────────────────
+        // When updating arrays/objects, create new copies:
+        // ✅ STATE.items = [...STATE.items, newItem]
+        // ❌ STATE.items.push(newItem)
         // ============================================
         const STATE = {
             // Initialize state properties here
             currentStep: 0,
             score: 0,
             maxScore: 0,
-            isComplete: false
+            isComplete: false,
+            
+            // Event tracking flags - prevents duplicate events
+            // PATTERN: "Guard Pattern" flags
+            _eventFlags: {
+                hasStarted: false,
+                hasCompleted: false,
+                // Add more flags as needed for one-time events
+            }
             // Add your state properties
         };
 
         // ============================================
         // INITIALIZATION
+        // PATTERN: "Initialization Pattern"
+        // ────────────────────────────────────────────
+        // Setup happens in this order:
+        // 1. Initialize event tracking (if enabled)
+        // 2. Process/prepare data (shuffle, filter, etc.)
+        // 3. Set initial STATE values
+        // 4. Call render() to display initial view
+        // 
+        // PATTERN: "Pure Functions for Data Processing"
+        // ────────────────────────────────────────────
+        // Use helper functions to transform CONFIG data:
+        // ✅ STATE.questions = shuffleArray(CONFIG.content.questions)
+        // ❌ Don't mutate CONFIG directly
         // ============================================
         function init() {
             // Initialize event tracking FIRST
@@ -310,9 +379,34 @@
 
         // ============================================
         // RENDERING
+        // PATTERN: "Declarative Rendering" (React-style)
+        // ────────────────────────────────────────────
+        // Build entire UI from STATE each time. Don't try to update
+        // individual elements - regenerate everything.
+        // 
+        // PATTERN: "Template Literal Pattern"
+        // ────────────────────────────────────────────
+        // Use template literals (backticks) to build HTML strings
+        // Interpolate STATE values with ${} syntax
+        // 
+        // PATTERN: "Render Pure" (No Side Effects)
+        // ────────────────────────────────────────────
+        // render() should ONLY build HTML from STATE
+        // Don't fire events, don't update STATE, don't make API calls
+        // 
+        // ⚠️ CRITICAL: NEVER fire events inside render()
+        // render() can be called multiple times - events should only fire
+        // when STATE changes, not when STATE is displayed
+        // 
+        // Flow: STATE → render() → HTML → DOM → attachEventListeners()
         // ============================================
         function render() {
             const app = document.getElementById('app');
+            
+            // PATTERN: "Conditional Rendering"
+            // Show different views based on STATE
+            // if (STATE.isComplete) return renderCompletionScreen();
+            // if (STATE.showHelp) return renderHelpScreen();
             
             // Build HTML based on current STATE
             const html = `
@@ -328,15 +422,43 @@
             
             app.innerHTML = html;
             
+            // PATTERN: "Event Delegation Setup"
             // Attach event listeners after DOM is updated
             attachEventListeners();
         }
 
         // ============================================
         // EVENT HANDLERS
-        // Pattern: handler → update STATE → fire event → call render()
+        // PATTERN: "Event Handler Pattern"
+        // ────────────────────────────────────────────
+        // Standard flow for ALL event handlers:
+        // 1. Extract data from event
+        // 2. Update STATE (business logic)
+        // 3. Fire tracking events (if needed)
+        // 4. Call render() to reflect changes
+        // 
+        // PATTERN: "Data Flow: Unidirectional"
+        // ────────────────────────────────────────────
+        // User Action → Handler → STATE Update → Event Fire → render() → DOM Update
+        // Never: DOM → STATE (don't read from DOM to update STATE)
+        // 
+        // ⚠️ KEY PRINCIPLES:
+        // 1. Fire events in handlers, NEVER in render()
+        // 2. Fire events BEFORE calling render()
+        // 3. Use event flags for one-time events (start, complete)
+        // 4. Fire repeatable events (clicks, inputs) directly
+        // 5. Use transition helpers for state-change events
+        // 
+        // PATTERN: "Separation of Concerns"
+        // ────────────────────────────────────────────
+        // attachEventListeners() - Binds handlers to DOM elements
+        // handle*() - Contains business logic and STATE updates
         // ============================================
         function attachEventListeners() {
+            // PATTERN: "Defensive Programming"
+            // Always check if element exists before attaching listener
+            // Elements might not exist in all views
+            
             // Attach event listeners to dynamic elements
             const exampleBtn = document.getElementById('exampleBtn');
             if (exampleBtn) {
@@ -345,15 +467,29 @@
         }
 
         function handleExampleClick(event) {
-            // 1. Get relevant data from event
-            // 2. Update STATE based on action
+            // PATTERN: "Handler Flow" - Follow this order:
+            
+            // 1. Extract relevant data from event
+            const buttonId = event.target.id;
+            
+            // 2. Update STATE based on action (business logic)
             STATE.currentStep++;
             
             // 3. Fire tracking event (if configured)
-            // EventTracker.fire('interactions.buttonClick', {
-            //     buttonId: event.target.id,
-            //     step: STATE.currentStep
-            // });
+            // PATTERN: "Idempotent Handler Pattern" - For repeatable events
+            EventTracker.fire('interactions.buttonClick', {
+                buttonId: buttonId,
+                step: STATE.currentStep
+            });
+            
+            // PATTERN: "Guard Pattern" - For one-time events, use flags:
+            // if (!STATE._eventFlags.someEvent) {
+            //     EventTracker.fire('milestones.someEvent', { data });
+            //     STATE._eventFlags.someEvent = true;
+            // }
+            
+            // Or use the helper:
+            // fireOnce('milestones.someEvent', 'someEvent', { data });
             
             // 4. Re-render to show changes
             render();
@@ -363,27 +499,284 @@
         function handleComplete() {
             STATE.isComplete = true;
             
-            // Fire completion event
-            EventTracker.fire('lifecycle.completed', {
-                score: STATE.score,
-                maxScore: STATE.maxScore
-            });
+            // ⚠️ CRITICAL PATTERN: Use event flags to prevent duplicate completion events
+            // Problem: Completion events can fire multiple times if handleComplete is called repeatedly
+            // Solution: Check flag before firing, set flag after firing
+            if (!STATE._eventFlags.hasCompleted) {
+                EventTracker.fire('lifecycle.completed', {
+                    score: STATE.score,
+                    maxScore: STATE.maxScore
+                });
+                STATE._eventFlags.hasCompleted = true;
+            }
             
             render();
         }
 
         // ============================================
+        // EVENT TRACKING PATTERNS & BEST PRACTICES
+        // These are established JavaScript patterns adapted for event tracking
+        // ============================================
+        
+        /**
+         * PATTERN 1: "Guard Pattern" (One-Time Events)
+         * Also known as: Flag Pattern, Once Pattern
+         * 
+         * Use for: Lifecycle events that should only fire once (start, complete, achievement unlocked)
+         * 
+         * Problem: Events fire multiple times when state changes repeatedly or render() is called
+         * Solution: Use boolean guards/flags in STATE._eventFlags to ensure single execution
+         * 
+         * ✅ CORRECT Implementation:
+         * if (!STATE._eventFlags.hasCompleted) {
+         *     EventTracker.fire('lifecycle.completed', { data });
+         *     STATE._eventFlags.hasCompleted = true;  // Set guard/flag
+         * }
+         * 
+         * When to use: start, complete, restart, achievement_unlocked, milestone_reached
+         */
+        
+        /**
+         * PATTERN 2: "Command Pattern" (Action/Handler Events)
+         * Also known as: Event-Command Pattern
+         * 
+         * Use for: User interactions and state transitions
+         * 
+         * Problem: Events fire during render loops instead of when user acts
+         * Solution: Fire events in event handlers BEFORE calling render(), not during render()
+         * 
+         * ✅ CORRECT - Fire in handler:
+         * function handleNext() {
+         *     STATE.currentStep++;                                    // 1. Update state
+         *     EventTracker.fire('step_changed', { step: STATE.currentStep }); // 2. Fire event
+         *     render();                                               // 3. Re-render
+         * }
+         * 
+         * ❌ INCORRECT - Fire in render:
+         * function render() {
+         *     if (STATE.currentStep > previousStep) {
+         *         EventTracker.fire('step_changed'); // DON'T DO THIS - causes infinite loops
+         *     }
+         * }
+         * 
+         * When to use: button_clicked, next_clicked, choice_selected, answer_submitted
+         */
+        
+        /**
+         * PATTERN 3: "Observer Pattern" with Edge Detection (State-Change Events)
+         * Also known as: State Transition Pattern, Edge Trigger Pattern
+         * 
+         * Use for: Events that fire when a condition becomes true (not while it stays true)
+         * 
+         * Problem: Checking state during render causes events to fire repeatedly every render
+         * Solution: Detect state transitions by comparing previous state to current state
+         * 
+         * ✅ CORRECT - Detect transition:
+         * function updateScore(points) {
+         *     const wasPerfect = STATE.score === STATE.maxScore;  // Capture BEFORE
+         *     STATE.score += points;                              // Change state
+         *     const isNowPerfect = STATE.score === STATE.maxScore; // Check AFTER
+         *     
+         *     if (!wasPerfect && isNowPerfect) {                  // Fire on TRANSITION
+         *         EventTracker.fire('perfect_score');
+         *     }
+         *     render();
+         * }
+         * 
+         * ❌ INCORRECT - Check state without transition:
+         * function render() {
+         *     if (STATE.score === STATE.maxScore) {
+         *         EventTracker.fire('perfect_score'); // Fires EVERY render when true!
+         *     }
+         * }
+         * 
+         * When to use: perfect_score, threshold_reached, all_correct, halfway_complete
+         */
+        
+        /**
+         * PATTERN 4: "Idempotent Handler Pattern" (Repeatable Events)
+         * Also known as: Direct Fire Pattern
+         * 
+         * Use for: Events that SHOULD fire every time an action occurs
+         * 
+         * These events are intentionally repeatable - no flag or guard needed
+         * Fire directly in event handlers each time they're called
+         * 
+         * ✅ CORRECT - Fire every time:
+         * function handleButtonClick(event) {
+         *     EventTracker.fire('button_clicked', { buttonId: event.target.id });
+         *     // Process the action
+         *     render();
+         * }
+         * 
+         * function handleInput(event) {
+         *     STATE.inputValue = event.target.value;
+         *     EventTracker.fire('input_changed', { value: STATE.inputValue });
+         *     render();
+         * }
+         * 
+         * When to use: button_clicked, input_changed, item_clicked, tab_switched
+         */
+        
+        /**
+         * PATTERN 5: "Reset Pattern" (State Cleanup)
+         * Also known as: Flag Reset Pattern
+         * 
+         * Use for: Resetting event flags when restarting or resetting the interaction
+         * 
+         * When users restart, some events should be able to fire again
+         * Clear the relevant flags to allow this
+         * 
+         * ✅ CORRECT - Reset flags selectively:
+         * function handleRestart() {
+         *     // Reset event flags for events that should fire again
+         *     STATE._eventFlags.hasCompleted = false;
+         *     STATE._eventFlags.hasReachedHalfway = false;
+         *     
+         *     // Keep hasStarted = true (we don't fire "started" again)
+         *     
+         *     // Reset other state
+         *     STATE.isComplete = false;
+         *     STATE.currentStep = 0;
+         *     
+         *     // Fire restart event
+         *     EventTracker.fire('lifecycle.restarted', { previousProgress: STATE.currentStep });
+         *     
+         *     render();
+         * }
+         * 
+         * When to use: In restart/reset handlers
+         */
+        
+        /**
+         * ═══════════════════════════════════════════════════════════
+         * HELPER FUNCTIONS - Pre-built Pattern Implementations
+         * ═══════════════════════════════════════════════════════════
+         */
+        
+        /**
+         * Helper: Implements Guard Pattern automatically
+         * Use this for one-time events to avoid manual flag management
+         * 
+         * @param {string} eventPath - Dot-notation path to event (e.g., 'lifecycle.completed')
+         * @param {string} eventKey - Unique key for the flag (e.g., 'hasCompleted')
+         * @param {object} data - Additional data to send with event
+         * 
+         * Example:
+         * fireOnce('lifecycle.completed', 'hasCompleted', { score: STATE.score });
+         */
+        function fireOnce(eventPath, eventKey, data = {}) {
+            if (!STATE._eventFlags[eventKey]) {
+                EventTracker.fire(eventPath, data);
+                STATE._eventFlags[eventKey] = true;
+            }
+        }
+        
+        /**
+         * Helper: Implements Observer Pattern with Edge Detection automatically
+         * Use this for events that should fire when a condition becomes true
+         * 
+         * @param {string} eventPath - Dot-notation path to event
+         * @param {string} conditionKey - Unique key for tracking this condition
+         * @param {boolean} isConditionMet - Whether the condition is currently true
+         * @param {object} data - Additional data to send with event
+         * 
+         * Example:
+         * fireOnTransition('milestones.perfect_score', 'perfectScore', 
+         *                  STATE.score === STATE.maxScore, { score: STATE.score });
+         */
+        function fireOnTransition(eventPath, conditionKey, isConditionMet, data = {}) {
+            const wasMetKey = `_was_${conditionKey}`;
+            const wasMet = STATE._eventFlags[wasMetKey] || false;
+            
+            if (!wasMet && isConditionMet) {
+                EventTracker.fire(eventPath, data);
+            }
+            
+            STATE._eventFlags[wasMetKey] = isConditionMet;
+        }
+        
+        /**
+         * ═══════════════════════════════════════════════════════════
+         * QUICK REFERENCE - Which Pattern When?
+         * ═══════════════════════════════════════════════════════════
+         * 
+         * Event Type                    → Pattern to Use
+         * ─────────────────────────────────────────────────────────
+         * Lifecycle (start/complete)    → Guard Pattern (fireOnce)
+         * User action (click/input)     → Command Pattern (direct fire)
+         * Achievement/milestone         → Observer Pattern (fireOnTransition)
+         * State threshold reached       → Observer Pattern (fireOnTransition)
+         * Button click                  → Idempotent Handler (direct fire)
+         * Restart/reset                 → Reset Pattern (clear flags)
+         * 
+         * ═══════════════════════════════════════════════════════════
+         * ANTI-PATTERNS - DO NOT DO THESE
+         * ═══════════════════════════════════════════════════════════
+         * 
+         * ❌ Firing events inside render():
+         *    function render() {
+         *        if (STATE.isComplete) {
+         *            EventTracker.fire('completed'); // INFINITE LOOP!
+         *        }
+         *    }
+         * 
+         * ❌ Firing one-time events without guards:
+         *    function handleComplete() {
+         *        EventTracker.fire('completed'); // Fires multiple times!
+         *        STATE.isComplete = true;
+         *        render();
+         *    }
+         * 
+         * ❌ Using guards for repeatable events:
+         *    function handleClick() {
+         *        if (!STATE._eventFlags.hasClicked) { // Wrong! Should fire each click
+         *            EventTracker.fire('clicked');
+         *            STATE._eventFlags.hasClicked = true;
+         *        }
+         *    }
+         * 
+         * ═══════════════════════════════════════════════════════════
+         */
+
+        // ============================================
         // HELPER FUNCTIONS
+        // PATTERN: "Pure Functions" (Functional Programming)
+        // ────────────────────────────────────────────
+        // Helper functions should be "pure" when possible:
+        // - Same input always produces same output
+        // - No side effects (don't modify STATE, DOM, or external vars)
+        // - Don't fire events or call render()
+        // 
+        // Benefits:
+        // - Easy to test
+        // - Easy to reuse
+        // - Predictable behavior
+        // - Can be moved to separate utility files
+        // 
+        // PATTERN: "Utility Functions"
+        // ────────────────────────────────────────────
+        // Common utilities to include:
+        // - Data transformation (filter, map, sort)
+        // - Validation (checkAnswer, validateInput)
+        // - Formatting (formatTime, formatScore)
+        // - Calculations (calculateScore, getProgress)
+        // - Array manipulation (shuffle, chunk, sample)
+        // 
         // Keep these pure (no side effects) when possible
         // ============================================
         
         /**
+         * PATTERN: "Fisher-Yates Shuffle Algorithm"
+         * Standard algorithm for randomizing array order
+         * Creates a new array (doesn't mutate original)
+         * 
          * Example helper function
-         * @param {Array} items - Items to shuffle
-         * @returns {Array} Shuffled array
+         * @param {Array} array - Items to shuffle
+         * @returns {Array} New shuffled array
          */
         function shuffleArray(array) {
-            const shuffled = [...array];
+            const shuffled = [...array]; // Create copy (don't mutate original)
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -392,6 +785,33 @@
         }
 
         // Add your helper functions here
+        // Examples of common helpers:
+        
+        /**
+         * PATTERN: "Validation Function"
+         * Pure function that returns boolean
+         */
+        // function isAnswerCorrect(userAnswer, correctAnswer) {
+        //     return userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+        // }
+        
+        /**
+         * PATTERN: "Transformation Function"
+         * Takes input, returns transformed output
+         */
+        // function formatTime(seconds) {
+        //     const mins = Math.floor(seconds / 60);
+        //     const secs = seconds % 60;
+        //     return `${mins}:${secs.toString().padStart(2, '0')}`;
+        // }
+        
+        /**
+         * PATTERN: "Calculation Function"
+         * Performs calculation, returns result
+         */
+        // function calculateScore(correct, total) {
+        //     return total > 0 ? Math.round((correct / total) * 100) : 0;
+        // }
 
         // ============================================
         // START APPLICATION
